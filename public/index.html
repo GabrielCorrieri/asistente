@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asistente de Vida</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--bg2:#171717;--bg3:#1f1f1f;--bg4:#2a2a2a;
+  --border:#2e2e2e;--border2:#3a3a3a;
+  --text:#e8e0d0;--text2:#9a9080;--text3:#5a5248;
+  --amber:#c9963e;--amber2:#e8b455;
+  --blue:#4a90d9;--green:#5bba84;--red:#e06060;--purple:#9b7fd4;--teal:#5bc8c8;--coral:#e08060;
+  --radius:8px;--radius-lg:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace,system-ui;font-size:13px;min-height:100vh}
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Playfair+Display:wght@500;700&display=swap');
+h1{font-family:'Playfair Display',serif;font-weight:700}
+input,textarea,select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:13px;padding:8px 12px;width:100%;transition:border .15s;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--amber)}
+textarea{resize:vertical;line-height:1.6}
+button{background:transparent;border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);cursor:pointer;font-family:inherit;font-size:12px;padding:7px 14px;transition:all .15s;white-space:nowrap}
+button:hover{border-color:var(--border2);color:var(--text);background:var(--bg3)}
+button.primary{background:var(--amber);border-color:var(--amber);color:#0f0f0f;font-weight:600}
+button.primary:hover{background:var(--amber2);border-color:var(--amber2)}
+button.ghost{border-color:transparent;padding:4px 8px}
+button.ghost:hover{background:var(--bg3)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px}
+.card.warn{border-color:#6b4400}
+.card.danger{border-color:#6b2020}
+.card.info{border-color:#1a3a5c}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.sh-l{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text)}
+.row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.badge{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg3);border:1px solid var(--border2)}
+.tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;background:var(--bg2);padding:4px;border-radius:var(--radius-lg);border:1px solid var(--border)}
+.tab{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius);font-size:12px;font-weight:400;color:var(--text2);border:1px solid transparent;transition:all .15s;position:relative;flex:1;justify-content:center}
+.tab.on{background:var(--bg3);border-color:var(--border2);color:var(--text);font-weight:500}
+.tab .dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.pill{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);color:var(--text2);transition:all .15s;background:var(--bg2)}
+.pill.on{border-color:var(--amber);color:var(--amber);background:rgba(201,150,62,.08)}
+.info-box{padding:10px 14px;border-radius:var(--radius);margin-bottom:12px;font-size:12px;line-height:1.6}
+.info-box.warn{background:rgba(107,68,0,.2);border:1px solid rgba(201,150,62,.3);color:var(--amber2)}
+.info-box.success{background:rgba(91,186,132,.1);border:1px solid rgba(91,186,132,.3);color:var(--green)}
+.info-box.coach{background:rgba(74,144,217,.1);border:1px solid rgba(74,144,217,.3);color:var(--blue)}
+.info-box.life{background:rgba(107,44,0,.15);border:1px solid rgba(224,128,96,.3);color:var(--coral)}
+.empty{text-align:center;padding:24px;color:var(--text3);font-size:12px}
+.spin{animation:spin .9s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade{animation:fadeUp .2s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+#app{max-width:920px;margin:0 auto;padding:16px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.header h1{font-size:22px;letter-spacing:-.5px}
+.trello-card{background:rgba(74,144,217,.06);border:1px solid rgba(74,144,217,.2);border-radius:var(--radius);padding:8px 12px;margin-bottom:8px;font-size:12px}
+.trello-card .list-name{color:var(--text2);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.task-check{width:17px;height:17px;border-radius:4px;border:1px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.task-check.done{background:var(--green);border-color:var(--green)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+select option{background:var(--bg3)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div>
+      <h1 id="greeting">Asistente de vida</h1>
+      <div id="date-str" style="font-size:11px;color:var(--text3);margin-top:3px"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="save-indicator" style="font-size:11px;color:var(--green);display:none">
+        <i class="ti ti-check" style="font-size:12px"></i> Guardado
+      </div>
+      <button onclick="go('settings')" class="ghost"><i class="ti ti-settings" style="font-size:15px"></i></button>
+    </div>
+  </div>
+  <div class="tabs" id="main-tabs"></div>
+  <div id="view-hoy"></div>
+  <div id="view-areas" style="display:none"></div>
+  <div id="view-finanzas" style="display:none"></div>
+  <div id="view-contexto" style="display:none"></div>
+  <div id="view-settings" style="display:none"></div>
+</div>
+
+<script>
+const TODAY = new Date().toISOString().split('T')[0];
+const DOW   = new Date().getDay();
+
+// ── State ─────────────────────────────────────────────────────────
+let D = { context:'', areas:{trabajo:{tasks:[],notes:''},casa:{tasks:[],notes:''},sociales:{tasks:[],notes:''},estudio:{tasks:[],notes:''},hobbies:{log:[],notes:''},fitness:{log:[],notes:''}}, finanzas:{cobros:[],pagos:[],propuestas:[]}, priorities:[], reflections:{} };
+let TAB='hoy', AREA='trabajo', PHASE='idle', QS=[], ANS={}, RESULT=null, FIN_FORM=null;
+let TRELLO_BOARDS=[], TRELLO_DATA={}, TRELLO_LOADING=false;
+let SETTINGS = { trelloKey:'', trelloToken:'', activeBoardId:'' };
+
+// ── Init ──────────────────────────────────────────────────────────
+(async()=>{
+  document.getElementById('date-str').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  updateGreeting();
+  const [data, settings] = await Promise.all([apiFetch('/api/data'), null]);
+  if(data) D = deepMerge(D, data);
+  SETTINGS = JSON.parse(localStorage.getItem('vida_settings')||'{}');
+  if(!SETTINGS.trelloKey) SETTINGS={trelloKey:'',trelloToken:'',activeBoardId:''};
+  if(D.lastCheckIn===TODAY){ PHASE='done'; const ref=D.reflections[TODAY]; if(ref){QS=ref.questions||[];ANS=ref.answers||{};RESULT={priorities:D.priorities,coaching:ref.coaching,lifeReminder:ref.lifeReminder};} }
+  if(SETTINGS.trelloKey && SETTINGS.trelloToken) loadTrello();
+  render();
+})();
+
+function updateGreeting(){
+  const h=new Date().getHours();
+  const g=h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
+  document.getElementById('greeting').textContent=g;
+}
+
+// ── API ───────────────────────────────────────────────────────────
+async function apiFetch(url,opts={}){
+  try{ const r=await fetch(url,opts); return await r.json(); }catch(e){ console.error(e); return null; }
+}
+async function aiCall(prompt){
+  const r=await apiFetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+  return r?.text||'';
+}
+
+async function save(silent=false){
+  await apiFetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D)});
+  if(!silent){ const el=document.getElementById('save-indicator'); if(el){el.style.display='flex';setTimeout(()=>el.style.display='none',1500);} }
+}
+
+// ── Trello ────────────────────────────────────────────────────────
+async function loadTrello(){
+  if(!SETTINGS.trelloKey||!SETTINGS.trelloToken) return;
+  TRELLO_LOADING=true;
+  const boards = await apiFetch(`/api/trello/boards?key=${SETTINGS.trelloKey}&token=${SETTINGS.trelloToken}`);
+  if(boards&&!boards.error){ TRELLO_BOARDS=boards; }
+  if(SETTINGS.activeBoardId){ await loadTrelloBoard(SETTINGS.activeBoardId); }
+  TRELLO_LOADING=false;
+  if(TAB==='areas'&&AREA==='trabajo') renderAreas();
+}
+async function loadTrelloBoard(boardId){
+  const data=await apiFetch(`/api/trello/cards?key=${SETTINGS.trelloKey}&token=${SETTINGS.trelloToken}&boardId=${boardId}`);
+  if(data&&!data.error){ TRELLO_DATA=data; SETTINGS.activeBoardId=boardId; localStorage.setItem('vida_settings',JSON.stringify(SETTINGS)); }
+}
+
+// ── Navigation ────────────────────────────────────────────────────
+function go(t){ TAB=t; FIN_FORM=null; ['hoy','areas','finanzas','contexto','settings'].forEach(v=>{ const el=document.getElementById('view-'+v); if(el)el.style.display=v===t?'block':'none'; }); render(); }
+function goArea(a){ AREA=a; render(); }
+
+// ── Helpers ───────────────────────────────────────────────────────
+const AREA_CFG={
+  trabajo: {icon:'ti-briefcase',label:'Trabajo',  color:'var(--blue)'},
+  casa:    {icon:'ti-home',     label:'Casa',     color:'var(--green)'},
+  sociales:{icon:'ti-users',    label:'Sociales', color:'var(--amber)'},
+  estudio: {icon:'ti-book',     label:'Estudio',  color:'var(--purple)'},
+  hobbies: {icon:'ti-music',    label:'Hobbies',  color:'var(--teal)'},
+  fitness: {icon:'ti-run',      label:'Fitness',  color:'var(--coral)'},
+};
+function allPendingTasks(){ return Object.entries(D.areas).flatMap(([a,v])=>(v.tasks||[]).filter(t=>!t.done).map(t=>({...t,area:a}))); }
+function alerts(){ const oc=(D.finanzas?.cobros||[]).filter(c=>c.status==='pending'&&c.dueDate&&new Date(c.dueDate)<new Date()); const up=(D.finanzas?.pagos||[]).filter(p=>p.status==='pending'&&p.dueDate&&new Date(p.dueDate)<=new Date(Date.now()+7*864e5)); const op=(D.finanzas?.propuestas||[]).filter(p=>p.status==='enviada'); return{oc,up,op,n:oc.length+up.length}; }
+function fmtDate(d){ if(!d)return''; try{return new Date(d+'T12:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});}catch{return d;} }
+function deepMerge(a,b){ const r={...a}; for(const k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))r[k]=deepMerge(a[k]||{},b[k]); else if(b[k]!==undefined)r[k]=b[k]; } return r; }
+
+// ── AI Check-in ───────────────────────────────────────────────────
+async function startCheckIn(){
+  if(!D.context?.trim()){ go('contexto'); return; }
+  PHASE='loading_q'; QS=[]; ANS={}; RESULT=null; renderHoy();
+  const a=alerts();
+  const dayCtx=DOW===1?'lunes (inicio de semana)':DOW===5?'viernes (cierre de semana)':DOW===0?'domingo':'día laboral';
+  const pendingStr=Object.entries(D.areas).map(([k,v])=>`${AREA_CFG[k].label}: ${(v.tasks||[]).filter(t=>!t.done).length} tareas`).join(', ');
+  const trelloStr=TRELLO_DATA.cards?`Tarjetas Trello activas: ${TRELLO_DATA.cards.filter(c=>!c.dueComplete).length}`:'Sin datos de Trello';
+
+  const prompt=`Sos el asistente de vida y coach personal de este usuario. Tenés acceso a su contexto de vida completo.
+
+CONTEXTO DE VIDA:
+${D.context}
+
+ESTADO ACTUAL:
+- Día: ${dayCtx}
+- Pendientes: ${pendingStr}
+- Cobros vencidos: ${a.oc.length}
+- Propuestas sin respuesta: ${a.op.length}
+- Pagos próximos: ${a.up.length}
+- ${trelloStr}
+
+Generá preguntas de check-in diario MUY específicas usando el contexto (mencioná proyectos reales, situaciones concretas).
+- Cubrí al menos 2 áreas de vida distintas
+- Si es lunes: planificación semanal; si hay cobros vencidos: preguntá específicamente
+- 4 preguntas normalmente, 5 si hay mucho contexto
+- Directas, segunda persona (vos)
+
+SOLO JSON: {"questions":["p1","p2","p3","p4"]}`;
+
+  const txt=await aiCall(prompt);
+  try{ QS=JSON.parse(txt.replace(/\`\`\`json|\`\`\`/g,'').trim()).questions||fallbackQ(); }catch{ QS=fallbackQ(); }
+  PHASE='answering'; renderHoy();
+}
+
+function fallbackQ(){ return ["¿Qué es lo más importante que tenés que resolver hoy?","¿Hay algo que venís postergando que te pesa?","¿Cómo está tu energía y tu vida personal?","¿Qué vas a hacer hoy que no sea trabajo?"]; }
+
+async function submitCheckIn(){
+  if(!Object.values(ANS).some(v=>v?.trim()))return;
+  PHASE='loading_p'; renderHoy();
+  const a=alerts();
+  const qa=QS.map((q,i)=>`P: ${q}\nR: ${ANS[i]||'(sin respuesta)'}`).join('\n\n');
+  const prompt=`Sos el coach ejecutivo y de vida de este usuario.
+
+CONTEXTO DE VIDA:
+${D.context}
+
+CHECK-IN:
+${qa}
+
+ALERTAS: cobros vencidos: ${a.oc.map(c=>`${c.client} $${c.amount}`).join(',')||'ninguno'} | propuestas: ${a.op.map(p=>p.client).join(',')||'ninguna'}
+
+Generá (específico, mencionando proyectos/situaciones reales):
+1. TOP 3 prioridades concretas y accionables
+2. Coaching insight de 2 líneas — potente y personalizado
+3. Recordatorio de vida personal si detectás algo descuidado — o "null"
+
+SOLO JSON: {"priorities":["p1","p2","p3"],"coaching":"texto","lifeReminder":"texto o null"}`;
+
+  const txt=await aiCall(prompt);
+  try{ RESULT=JSON.parse(txt.replace(/\`\`\`json|\`\`\`/g,'').trim()); }
+  catch{ RESULT={priorities:["Revisar emails urgentes","Avanzar tarea principal de trabajo","Tiempo personal garantizado"],coaching:"Lo urgente siempre va a existir. La pregunta es si lo importante también tiene espacio.",lifeReminder:"null"}; }
+  D={...D,priorities:RESULT.priorities||[],lastCheckIn:TODAY,reflections:{...D.reflections,[TODAY]:{questions:QS,answers:ANS,coaching:RESULT.coaching,lifeReminder:RESULT.lifeReminder}}};
+  await save(true); PHASE='done'; renderHoy();
+}
+
+// ── Tasks ─────────────────────────────────────────────────────────
+async function addTask(area){ const el=document.getElementById('ti-'+area); if(!el||!el.value.trim())return; D.areas[area].tasks=[...(D.areas[area].tasks||[]),{id:Date.now(),text:el.value.trim(),done:false,date:TODAY}]; await save(); el.value=''; TAB==='hoy'?renderHoy():renderAreas(); }
+async function toggleTask(area,id){ D.areas[area].tasks=D.areas[area].tasks.map(t=>t.id===id?{...t,done:!t.done}:t); await save(); TAB==='hoy'?renderHoy():renderAreas(); }
+async function delTask(area,id){ D.areas[area].tasks=D.areas[area].tasks.filter(t=>t.id!==id); await save(); TAB==='hoy'?renderHoy():renderAreas(); }
+async function saveNotes(area){ const el=document.getElementById('notes-'+area); if(el){D.areas[area].notes=el.value; await save();} }
+
+// ── Finance ───────────────────────────────────────────────────────
+async function saveFinance(type){
+  const lk=type==='cobro'?'cobros':type==='pago'?'pagos':'propuestas';
+  const obj={id:Date.now()};
+  const fields=type==='cobro'?['client','amount','dueDate','notes']:type==='pago'?['vendor','amount','dueDate','notes']:['client','service','amount','sentDate','followUpDate','notes'];
+  fields.forEach(f=>{const el=document.getElementById('ff-'+type+'-'+f);if(el)obj[f]=el.value;});
+  obj.status=type==='propuesta'?'enviada':'pending';
+  D.finanzas[lk]=[...(D.finanzas[lk]||[]),obj];
+  await save(); FIN_FORM=null; renderFinanzas();
+}
+async function markPaid(lk,id){ D.finanzas[lk]=D.finanzas[lk].map(x=>x.id===id?{...x,status:'paid'}:x); await save(); renderFinanzas(); }
+async function setPropStatus(id,s){ D.finanzas.propuestas=D.finanzas.propuestas.map(p=>p.id===id?{...p,status:s}:p); await save(); renderFinanzas(); }
+async function delFin(lk,id){ D.finanzas[lk]=D.finanzas[lk].filter(x=>x.id!==id); await save(); renderFinanzas(); }
+
+// ── Log ───────────────────────────────────────────────────────────
+async function addLog(area){ const act=document.getElementById('log-act-'+area)?.value; if(!act)return; const notes=document.getElementById('log-notes-'+area)?.value||''; const date=document.getElementById('log-date-'+area)?.value||TODAY; D.areas[area].log=[...(D.areas[area].log||[]),{id:Date.now(),act,notes,date}]; await save(); renderAreas(); }
+async function delLog(area,id){ D.areas[area].log=D.areas[area].log.filter(l=>l.id!==id); await save(); renderAreas(); }
+
+// ── Context ───────────────────────────────────────────────────────
+async function saveContext(){ const el=document.getElementById('ctx-inp'); if(el){D.context=el.value; await save();} }
+
+// ── Settings ──────────────────────────────────────────────────────
+async function saveSettings(){
+  SETTINGS.trelloKey  =document.getElementById('s-trello-key')?.value||'';
+  SETTINGS.trelloToken=document.getElementById('s-trello-token')?.value||'';
+  localStorage.setItem('vida_settings',JSON.stringify(SETTINGS));
+  const msg=document.getElementById('s-msg'); if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',2000);}
+  if(SETTINGS.trelloKey&&SETTINGS.trelloToken) await loadTrello();
+}
+async function selectBoard(id){ SETTINGS.activeBoardId=id; localStorage.setItem('vida_settings',JSON.stringify(SETTINGS)); await loadTrelloBoard(id); renderAreas(); }
+
+// ── RENDER ────────────────────────────────────────────────────────
+function render(){ renderTabs(); if(TAB==='hoy')renderHoy(); else if(TAB==='areas')renderAreas(); else if(TAB==='finanzas')renderFinanzas(); else if(TAB==='contexto')renderContexto(); else if(TAB==='settings')renderSettings(); }
+
+function renderTabs(){
+  const a=alerts();
+  const tabs=[{id:'hoy',icon:'ti-sun',label:'Hoy'},{id:'areas',icon:'ti-layout-grid',label:'Áreas'},{id:'finanzas',icon:'ti-coin',label:'Finanzas',badge:a.n},{id:'contexto',icon:'ti-user',label:'Contexto'}];
+  document.getElementById('main-tabs').innerHTML=tabs.map(t=>`<button class="tab ${TAB===t.id?'on':''}" onclick="go('${t.id}')"><i class="ti ${t.icon}" style="font-size:14px"></i>${t.label}${t.badge?`<span class="dot">${t.badge}</span>`:''}</button>`).join('');
+}
+
+function renderHoy(){
+  const a=alerts(); const tasks=allPendingTasks().slice(0,10);
+  const done=Object.values(D.areas).flatMap(v=>v.tasks||[]).filter(t=>t.done).length;
+  const total=Object.values(D.areas).flatMap(v=>v.tasks||[]).length;
+
+  let ci='';
+  if(PHASE==='idle'){
+    const nc=!D.context?.trim();
+    ci=`<div style="text-align:center;padding:1.5rem 0">
+      ${nc?`<div class="info-box warn" style="text-align:left;margin-bottom:12px"><i class="ti ti-info-circle" style="margin-right:6px"></i>Primero completá tu <strong>contexto de vida</strong> (tab Contexto) para preguntas personalizadas.</div>`:''}
+      <div style="color:var(--text2);margin-bottom:16px;line-height:1.7;font-size:12px">El asistente lee tu contexto completo, tareas pendientes y finanzas para generar preguntas adaptadas a tu día real.</div>
+      <button class="primary" onclick="startCheckIn()"><i class="ti ti-sparkles" style="margin-right:8px"></i>Iniciar check-in</button>
+    </div>`;
+  }else if(PHASE==='loading_q'){
+    ci=`<div style="text-align:center;padding:1.5rem"><i class="ti ti-loader spin" style="font-size:24px;color:var(--text2)"></i><div style="color:var(--text3);margin-top:10px;font-size:12px">Leyendo tu contexto y preparando preguntas...</div></div>`;
+  }else if(PHASE==='answering'){
+    ci=QS.map((q,i)=>`<div style="margin-bottom:14px"><div style="font-weight:500;margin-bottom:6px">${i+1}. ${q}</div><textarea rows="2" id="ans-${i}" placeholder="Tu respuesta..." oninput="ANS[${i}]=this.value">${ANS[i]||''}</textarea></div>`).join('')
+      +`<button class="primary" onclick="submitCheckIn()" style="margin-top:8px"><i class="ti ti-brain" style="margin-right:8px"></i>Generar prioridades</button>`;
+  }else if(PHASE==='loading_p'){
+    ci=`<div style="text-align:center;padding:1.5rem"><i class="ti ti-loader spin" style="font-size:24px;color:var(--text2)"></i><div style="color:var(--text3);margin-top:10px;font-size:12px">Analizando tus respuestas...</div></div>`;
+  }else if(PHASE==='done'&&RESULT){
+    ci=`<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tus 3 prioridades de hoy</div>
+      ${(RESULT.priorities||[]).map((p,i)=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:16px;margin-top:1px">${i+1}</span><span>${p}</span></div>`).join('')}
+      ${RESULT.coaching?`<div class="info-box coach" style="margin-top:12px"><i class="ti ti-bulb" style="margin-right:6px"></i>${RESULT.coaching}</div>`:''}
+      ${RESULT.lifeReminder&&RESULT.lifeReminder!=='null'?`<div class="info-box life"><i class="ti ti-heart" style="margin-right:6px"></i>${RESULT.lifeReminder}</div>`:''}
+      <button onclick="PHASE='idle';RESULT=null;renderHoy()" style="margin-top:10px;font-size:11px"><i class="ti ti-refresh" style="margin-right:5px"></i>Repetir check-in</button>`;
+  }
+
+  const alertHtml=(a.oc.length||a.up.length||a.op.length)?`<div class="card warn fade">
+    <div class="sh"><div class="sh-l" style="color:#e8b455"><i class="ti ti-bell" style="font-size:15px"></i>Alertas activas</div></div>
+    ${a.oc.map(c=>`<div class="row"><div class="status-dot" style="background:var(--red)"></div><span style="flex:1;color:var(--red)">Cobro vencido: <strong>${c.client}</strong> $${c.amount}</span><button class="ghost" onclick="go('finanzas')" style="font-size:11px">Ver ↗</button></div>`).join('')}
+    ${a.up.map(p=>`<div class="row"><div class="status-dot" style="background:var(--amber)"></div><span style="flex:1;color:var(--amber2)">Pago próximo: <strong>${p.vendor}</strong> $${p.amount} · ${fmtDate(p.dueDate)}</span></div>`).join('')}
+    ${a.op.map(p=>`<div class="row"><div class="status-dot" style="background:var(--blue)"></div><span style="flex:1;color:var(--blue)">Propuesta sin respuesta: <strong>${p.client}</strong></span></div>`).join('')}
+  </div>`:'';
+
+  const taskRows=tasks.length===0?`<div class="empty">Sin tareas pendientes</div>`:tasks.map(t=>`<div class="row">
+    <button class="task-check" onclick="toggleTask('${t.area}',${t.id})"></button>
+    <span style="flex:1">${t.text}</span>
+    <span class="badge" style="color:${AREA_CFG[t.area].color}">${AREA_CFG[t.area].label}</span>
+  </div>`).join('');
+
+  document.getElementById('view-hoy').innerHTML=`
+    <div class="card fade"><div class="sh"><div class="sh-l"><i class="ti ti-clipboard-check" style="font-size:15px;color:var(--amber)"></i>Check-in diario</div>${PHASE==='done'?'<span style="font-size:11px;color:var(--green)"><i class="ti ti-check"></i> Completado</span>':''}</div>${ci}</div>
+    ${alertHtml}
+    <div class="card"><div class="sh"><div class="sh-l"><i class="ti ti-checklist" style="font-size:15px"></i>Pendientes de hoy</div><span style="color:var(--text3);font-size:11px">${done}/${total}</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px"><input id="ti-trabajo" type="text" placeholder="Agregar tarea rápida..." onkeydown="if(event.key==='Enter')addTask('trabajo')" style="flex:1"><button onclick="addTask('trabajo')"><i class="ti ti-plus"></i></button></div>
+      ${taskRows}
+    </div>`;
+}
+
+function renderAreas(){
+  const areaPills=Object.entries(AREA_CFG).map(([k,c])=>{
+    const n=(D.areas[k].tasks||[]).filter(t=>!t.done).length;
+    return `<button class="pill ${AREA===k?'on':''}" onclick="goArea('${k}')" style="${AREA===k?`color:${c.color};border-color:${c.color}`:''}">${c.label}${n?` <span style="background:var(--bg3);padding:1px 5px;border-radius:10px;font-size:10px">${n}</span>`:''}</button>`;
+  }).join('');
+
+  const a=D.areas[AREA]; const cfg=AREA_CFG[AREA];
+  const tasks=(a.tasks||[]);
+  const taskRows=tasks.map(t=>`<div class="row"><button class="task-check ${t.done?'done':''}" onclick="toggleTask('${AREA}',${t.id})">${t.done?'<i class="ti ti-check" style="font-size:10px;color:#fff"></i>':''}</button><span style="flex:1;${t.done?'text-decoration:line-through;color:var(--text3)':''}">${t.text}</span><button class="ghost" onclick="delTask('${AREA}',${t.id})"><i class="ti ti-x" style="font-size:12px"></i></button></div>`).join('');
+
+  // Trello section (only for Trabajo)
+  let trelloHtml='';
+  if(AREA==='trabajo'){
+    if(!SETTINGS.trelloKey){
+      trelloHtml=`<div class="info-box warn" style="margin-bottom:14px"><i class="ti ti-brand-trello" style="margin-right:6px"></i>Conectá Trello en <strong>Ajustes</strong> para ver tus tableros acá. <button onclick="go('settings')" style="padding:2px 8px;font-size:11px;margin-left:8px">Ir a ajustes ↗</button></div>`;
+    } else if(TRELLO_LOADING){
+      trelloHtml=`<div style="color:var(--text3);font-size:12px;margin-bottom:14px"><i class="ti ti-loader spin" style="margin-right:6px"></i>Cargando Trello...</div>`;
+    } else if(TRELLO_DATA.cards){
+      const byList={};
+      (TRELLO_DATA.lists||[]).forEach(l=>byList[l.id]={name:l.name,cards:[]});
+      (TRELLO_DATA.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{ if(byList[c.idList])byList[c.idList].cards.push(c); });
+      const listsHtml=Object.values(byList).filter(l=>l.cards.length).map(l=>`
+        <div style="margin-bottom:10px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px">${l.name}</div>
+          ${l.cards.slice(0,8).map(c=>`<div class="trello-card">${c.name}${c.due?` <span style="color:var(--amber);font-size:10px">· ${fmtDate(c.due)}</span>`:''}</div>`).join('')}
+        </div>`).join('');
+      trelloHtml=`<div style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--blue)"><i class="ti ti-brand-trello" style="margin-right:5px"></i>Trello — ${TRELLO_BOARDS.find(b=>b.id===SETTINGS.activeBoardId)?.name||'Tablero'}</div>
+          <select onchange="selectBoard(this.value)" style="width:auto;font-size:11px;padding:3px 8px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}" ${b.id===SETTINGS.activeBoardId?'selected':''}>${b.name}</option>`).join('')}</select>
+        </div>
+        ${listsHtml||'<div class="empty">No hay tarjetas activas</div>'}
+      </div>`;
+    } else if(SETTINGS.trelloKey){
+      trelloHtml=`<div class="info-box warn" style="margin-bottom:14px"><i class="ti ti-loader spin" style="margin-right:6px"></i>Conectando con Trello...</div>`;
+    }
+  }
+
+  // Log section
+  const hasLog=AREA==='hobbies'||AREA==='fitness';
+  const logOpts=AREA==='hobbies'?['Lectura','Música','Cocina','Salida','Series/Pelis','Otro']:['Gimnasio','Cardio','Caminata','Clase','Meal prep','Dieta limpia','Otro'];
+  const logRows=(a.log||[]).slice().reverse().map(l=>`<div class="row"><i class="ti ${AREA==='hobbies'?'ti-star':'ti-heart-rate'}" style="font-size:13px;color:var(--text2)"></i><div style="flex:1"><div>${l.act}</div>${l.notes?`<div style="color:var(--text3);font-size:11px">${l.notes}</div>`:''}</div><span style="color:var(--text3);font-size:11px">${fmtDate(l.date)}</span><button class="ghost" onclick="delLog('${AREA}',${l.id})"><i class="ti ti-x" style="font-size:12px"></i></button></div>`).join('');
+
+  document.getElementById('view-areas').innerHTML=`
+    <div style="margin-bottom:12px">${areaPills}</div>
+    <div class="card fade">
+      <div class="sh"><div class="sh-l" style="color:${cfg.color}"><i class="ti ${cfg.icon}" style="font-size:15px"></i>${cfg.label}</div></div>
+      ${trelloHtml}
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Notas del área</div>
+        <textarea id="notes-${AREA}" rows="3" placeholder="Notas, estado general, recordatorios..." onblur="saveNotes('${AREA}')">${a.notes||''}</textarea>
+      </div>
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tareas</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px"><input type="text" id="ti-${AREA}" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTask('${AREA}')" style="flex:1"><button onclick="addTask('${AREA}')"><i class="ti ti-plus"></i></button></div>
+      ${tasks.length===0?`<div class="empty" style="padding:12px">Sin tareas</div>`:taskRows}
+      ${hasLog?`<div style="margin-top:16px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Registro de actividad</div>
+        <div class="grid2" style="margin-bottom:8px"><select id="log-act-${AREA}"><option value="">Seleccioná actividad...</option>${logOpts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select><input type="date" id="log-date-${AREA}" value="${TODAY}"></div>
+        <input type="text" id="log-notes-${AREA}" placeholder="Notas opcionales..." style="margin-bottom:8px">
+        <button onclick="addLog('${AREA}')"><i class="ti ti-plus" style="margin-right:5px"></i>Registrar</button>
+        <div style="margin-top:10px">${(a.log||[]).length===0?`<div class="empty" style="padding:12px">Sin registros</div>`:logRows}</div>
+      </div>`:''}
+    </div>`;
+}
+
+function finSection(title,icon,lk,type,items){
+  const showForm=FIN_FORM===type;
+  const stC={pending:'var(--amber)',paid:'var(--green)',enviada:'var(--blue)',ganada:'var(--green)',perdida:'var(--red)',seguimiento:'var(--amber)'};
+  const stL={pending:'Pendiente',paid:'Cobrado',enviada:'Enviada',ganada:'Ganada',perdida:'Perdida',seguimiento:'Seguimiento'};
+  const rows=items.map(x=>{
+    const isOD=x.status==='pending'&&x.dueDate&&new Date(x.dueDate)<new Date();
+    const isNr=x.status==='pending'&&x.dueDate&&new Date(x.dueDate)<=new Date(Date.now()+7*864e5);
+    const lbl=x.client||x.vendor||x.category||'—';
+    const parts=[x.service,x.amount?`$${x.amount}`:'',x.dueDate?fmtDate(x.dueDate):'',x.sentDate?`Enviada ${fmtDate(x.sentDate)}`:x.followUpDate?`Follow-up ${fmtDate(x.followUpDate)}`:''].filter(Boolean).join(' · ');
+    const warn=isOD?` <span style="color:var(--red);font-size:10px">VENCIDO</span>`:isNr?` <span style="color:var(--amber);font-size:10px">PRÓXIMO</span>`:'';
+    const sel=type==='propuesta'?`<select onchange="setPropStatus(${x.id},this.value)" style="font-size:11px;padding:2px 8px;width:auto">${['enviada','seguimiento','ganada','perdida'].map(s=>`<option value="${s}" ${x.status===s?'selected':''}>${stL[s]}</option>`).join('')}</select>`
+      :`<span class="badge" style="color:${stC[x.status]||'var(--text2)'}">${stL[x.status]||x.status}</span>`;
+    return `<div class="row"><div style="flex:1"><div style="color:${isOD?'var(--red)':'var(--text)'}">${lbl}${warn}</div><div style="color:var(--text3);font-size:11px">${parts}</div></div>${sel}${x.status==='pending'&&type!=='propuesta'?`<button class="ghost" onclick="markPaid('${lk}',${x.id})" title="Marcar pagado"><i class="ti ti-check" style="font-size:13px;color:var(--green)"></i></button>`:''}<button class="ghost" onclick="delFin('${lk}',${x.id})"><i class="ti ti-x" style="font-size:12px"></i></button></div>`;}).join('');
+
+  const ffId=s=>`ff-${type}-${s}`;
+  const inp=(id,ph,t='text')=>`<input id="${ffId(id)}" type="${t}" placeholder="${ph}">`;
+  let formFields='';
+  if(type==='cobro') formFields=`<div class="grid2">${inp('client','Cliente *')}${inp('amount','Monto *','number')}</div><div class="grid2" style="margin-top:8px">${inp('dueDate','','date')}<div style="display:flex;align-items:center;font-size:11px;color:var(--text3)">Fecha de vencimiento</div></div>${inp('notes','Notas (opcional)')}`;
+  if(type==='pago')  formFields=`<div class="grid2">${inp('vendor','Proveedor/Servicio *')}${inp('amount','Monto *','number')}</div><div class="grid2" style="margin-top:8px">${inp('dueDate','','date')}<div style="display:flex;align-items:center;font-size:11px;color:var(--text3)">Fecha de vencimiento</div></div>${inp('notes','Notas (opcional)')}`;
+  if(type==='propuesta') formFields=`<div class="grid2">${inp('client','Cliente *')}${inp('service','Servicio *')}</div><div class="grid2" style="margin-top:8px">${inp('amount','Monto (opcional)','number')}${inp('sentDate','','date')}</div><div style="margin-top:8px"><label style="font-size:11px;color:var(--text3)">Follow-up programado:</label>${inp('followUpDate','','date')}</div>${inp('notes','Notas')}`;
+
+  return `<div class="card"><div class="sh"><div class="sh-l"><i class="ti ${icon}" style="font-size:15px"></i>${title}</div><button onclick="FIN_FORM=FIN_FORM==='${type}'?null:'${type}';renderFinanzas()"><i class="ti ti-plus" style="margin-right:4px;font-size:12px"></i>Agregar</button></div>
+    ${showForm?`<div style="background:var(--bg3);border-radius:var(--radius);padding:12px;margin-bottom:12px"><div style="font-weight:500;margin-bottom:10px;text-transform:capitalize">Nuevo ${type}</div>${formFields}<div style="display:flex;gap:8px;margin-top:10px"><button class="primary" onclick="saveFinance('${type}')">Guardar</button><button onclick="FIN_FORM=null;renderFinanzas()">Cancelar</button></div></div>`:''}
+    ${items.length===0&&!showForm?`<div class="empty">Sin registros</div>`:rows}
+  </div>`;
+}
+
+function renderFinanzas(){
+  document.getElementById('view-finanzas').innerHTML=
+    finSection('Cobros','ti-cash','cobros','cobro',D.finanzas.cobros||[])+
+    finSection('Propuestas','ti-send','propuestas','propuesta',D.finanzas.propuestas||[])+
+    finSection('Pagos a proveedores','ti-credit-card','pagos','pago',D.finanzas.pagos||[]);
+}
+
+function renderContexto(){
+  const refEntries=Object.entries(D.reflections||{}).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);
+  document.getElementById('view-contexto').innerHTML=`
+    <div class="card fade">
+      <div class="sh"><div class="sh-l"><i class="ti ti-user" style="font-size:15px;color:var(--amber)"></i>Mi contexto de vida</div></div>
+      <div style="color:var(--text2);margin-bottom:10px;font-size:12px;line-height:1.7">Contame cómo está tu vida hoy — proyectos activos, situación familiar, qué está bien y qué está trabado. Cuanto más detalle, más personalizadas son las preguntas y prioridades.</div>
+      <textarea id="ctx-inp" rows="12" placeholder="Ej: Tengo una agencia de marketing con 3 empleados, un proyecto con inversores chinos en negociación, una productora que recién arranca...&#10;&#10;Mi novia está embarazada de 5 meses, mi hija nace en agosto...&#10;&#10;En el gym voy 3 veces por semana pero últimamente falto mucho...&#10;&#10;Lo que más me estresa ahora mismo es...">${D.context||''}</textarea>
+      <div style="margin-top:10px"><button class="primary" onclick="saveContext()"><i class="ti ti-device-floppy" style="margin-right:8px"></i>Guardar contexto</button></div>
+    </div>
+    ${refEntries.length?`<div class="card"><div class="sh"><div class="sh-l"><i class="ti ti-history" style="font-size:15px"></i>Historial de reflexiones</div></div>
+      ${refEntries.map(([date,ref])=>`<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+        <div style="font-weight:500;margin-bottom:8px">${new Date(date+'T12:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</div>
+        ${ref.coaching?`<div class="info-box coach" style="margin-bottom:8px;font-size:12px"><i class="ti ti-bulb" style="margin-right:5px"></i>${ref.coaching}</div>`:''}
+        ${(ref.questions||[]).map((q,i)=>`<div style="margin-bottom:5px"><div style="color:var(--text2);font-size:12px">${q}</div><div style="color:var(--text3);font-size:12px;padding-left:10px;font-style:italic">${ref.answers?.[i]||'—'}</div></div>`).join('')}
+      </div>`).join('')}
+    </div>`:''}`;
+}
+
+function renderSettings(){
+  document.getElementById('view-settings').innerHTML=`
+    <div class="card fade">
+      <div class="sh"><div class="sh-l"><i class="ti ti-brand-trello" style="font-size:15px;color:var(--blue)"></i>Integración Trello</div></div>
+      <div style="color:var(--text2);font-size:12px;margin-bottom:12px;line-height:1.7">Obtené tu API Key y Token en <a href="https://trello.com/app-key" target="_blank" style="color:var(--blue)">trello.com/app-key</a>. Generá el token haciendo clic en "Token" en esa misma página.</div>
+      <div style="margin-bottom:8px"><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">API Key</label><input id="s-trello-key" type="text" placeholder="Pegá tu API Key..." value="${SETTINGS.trelloKey||''}"></div>
+      <div style="margin-bottom:12px"><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Token</label><input id="s-trello-token" type="text" placeholder="Pegá tu Token..." value="${SETTINGS.trelloToken||''}"></div>
+      <button class="primary" onclick="saveSettings()"><i class="ti ti-check" style="margin-right:8px"></i>Guardar y conectar</button>
+      <div id="s-msg" style="display:none;margin-top:8px;color:var(--green);font-size:12px"><i class="ti ti-check"></i> Configuración guardada</div>
+      ${TRELLO_BOARDS.length?`<div style="margin-top:16px"><div style="font-size:11px;color:var(--text3);margin-bottom:8px">Seleccioná el tablero principal de la agencia:</div>${TRELLO_BOARDS.map(b=>`<div class="row"><span style="flex:1">${b.name}</span><button onclick="selectBoard('${b.id}')" style="font-size:11px;${SETTINGS.activeBoardId===b.id?'color:var(--green)':''}">${SETTINGS.activeBoardId===b.id?'✓ Activo':'Seleccionar'}</button></div>`).join('')}</div>`:''}
+    </div>
+    <div class="card">
+      <div class="sh"><div class="sh-l"><i class="ti ti-brand-whatsapp" style="font-size:15px;color:var(--green)"></i>Bot de WhatsApp</div></div>
+      <div style="color:var(--text2);font-size:12px;line-height:1.7">El bot de WhatsApp se configura en el servidor. Una vez deployado, vas a recibir briefings automáticos a las 7am, 12pm y 7pm.<br><br>Comandos disponibles en WhatsApp:<br>
+        <div style="margin-top:8px"><code style="background:var(--bg3);padding:2px 6px;border-radius:4px">briefing</code> → resumen matutino<br><code style="background:var(--bg3);padding:2px 6px;border-radius:4px">prioridades</code> → tus top 3<br><code style="background:var(--bg3);padding:2px 6px;border-radius:4px">finanzas</code> → cobros y pagos<br><code style="background:var(--bg3);padding:2px 6px;border-radius:4px">trello</code> → tarjetas activas<br>O escribí cualquier cosa y te respondo.</div>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "vida-assistant",
+  "version": "1.0.0",
+  "description": "Asistente de vida personal — Web App + WhatsApp Bot",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3",
+    "twilio": "^5.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}
