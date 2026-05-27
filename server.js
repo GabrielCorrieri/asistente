@@ -26,13 +26,33 @@ function saveData(d) { fs.writeFileSync(DATA, JSON.stringify(d, null, 2)); }
 app.get('/api/data',  (_, res) => res.json(loadData()));
 app.post('/api/data', (req, res) => { saveData(req.body); res.json({ ok: true }); });
 
-// Anthropic proxy (keeps key on server, not exposed to browser)
+// Anthropic proxy — full agent context for web chat
 app.post('/api/ai', async (req, res) => {
   try {
+    const { prompt, context, contextVida, priorities, prioritiesVida } = req.body;
+    const data = loadData();
+    
+    const systemPrompt = `Sos GUS, el asistente personal e inteligente de Gabriel. Respondés desde la web app de forma clara y útil.
+
+CONTEXTO LABORAL:
+${context || data.context || 'Sin contexto cargado.'}
+
+CONTEXTO PERSONAL:
+${contextVida || data.contextVida || 'Sin contexto de vida.'}
+
+PRIORIDADES LABORALES HOY:
+${(priorities || data.prioritiesLab || []).join('\n') || 'Sin check-in de hoy'}
+
+PRIORIDADES DE VIDA HOY:
+${(prioritiesVida || data.prioritiesVida || []).join('\n') || 'Sin check-in de vida'}
+
+Respondé en español rioplatense. Máximo 200 palabras. Claro y directo.`;
+
     const msg = await ai.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: req.body.prompt }]
+      max_tokens: 600,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: prompt }]
     });
     res.json({ text: msg.content[0]?.text || '' });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -82,11 +102,115 @@ app.get('/api/trello/daily-summary', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── Audio transcription (Whisper) ────────────────────────────────
+app.post('/api/transcribe', async (req, res) => {
+  try {
+    const { audioUrl } = req.body;
+    if (!audioUrl) return res.status(400).json({ error: 'No audioUrl' });
+
+    // Download audio from Twilio
+    const sid  = process.env.TWILIO_ACCOUNT_SID;
+    const auth = process.env.TWILIO_AUTH_TOKEN;
+    const audioRes = await fetch(audioUrl, {
+      headers: { 'Authorization': 'Basic ' + Buffer.from(`${sid}:${auth}`).toString('base64') }
+    });
+    const audioBuffer = await audioRes.arrayBuffer();
+
+    // Send to OpenAI Whisper
+    const FormData = require('form-data');
+    const form = new FormData();
+    form.append('file', Buffer.from(audioBuffer), { filename: 'audio.ogg', contentType: 'audio/ogg' });
+    form.append('model', 'whisper-1');
+    form.append('language', 'es');
+
+    const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, ...form.getHeaders() },
+      body: form
+    });
+    const whisperData = await whisperRes.json();
+    res.json({ text: whisperData.text || '' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── WhatsApp Agent ────────────────────────────────────────────────
 app.post('/whatsapp', async (req, res) => {
-  const body = req.body.Body?.trim() || '';
   const data = loadData();
-  const reply = await agentReply(body, data);
+  let message = req.body.Body?.trim() || '';
+  let reply   = '';
+
+  // Handle voice/audio messages
+  const numMedia = parseInt(req.body.NumMedia || '0');
+  if (numMedia > 0 && req.body.MediaContentType0?.includes('audio')) {
+    try {
+      const audioUrl = req.body.MediaUrl0;
+      const sid  = process.env.TWILIO_ACCOUNT_SID;
+      const auth = process.env.TWILIO_AUTH_TOKEN;
+
+      // Download audio
+      const audioRes = await fetch(audioUrl, {
+        headers: { 'Authorization': 'Basic ' + Buffer.from(`${sid}:${auth}`).toString('base64') }
+      });
+      const audioBuffer = await audioRes.arrayBuffer();
+
+      if (process.env.OPENAI_API_KEY) {
+        // Transcribe with Whisper
+        const { default: FormData } = await import('formdata-node');
+        const { FormDataEncoder } = await import('form-data-encoder');
+        const { Readable } = require('stream');
+
+        // Use node-fetch compatible approach
+        const fetch2 = fetch;
+        const boundary = '----FormBoundary' + Math.random().toString(36);
+        const body2 = Buffer.concat([
+          Buffer.from(`--${boundary}
+Content-Disposition: form-data; name="file"; filename="audio.ogg"
+Content-Type: audio/ogg
+
+`),
+          Buffer.from(audioBuffer),
+          Buffer.from(`
+--${boundary}
+Content-Disposition: form-data; name="model"
+
+whisper-1
+--${boundary}
+Content-Disposition: form-data; name="language"
+
+es
+--${boundary}--
+`)
+        ]);
+
+        const wRes = await fetch2('https://api.openai.com/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Content-Length': body2.length
+          },
+          body: body2
+        });
+        const wData = await wRes.json();
+        message = wData.text || '';
+
+        if (message) {
+          reply = await agentReply(`[Audio transcripto]: ${message}`, data);
+        } else {
+          reply = '⚠️ No pude entender el audio. ¿Podés escribirme?';
+        }
+      } else {
+        reply = '⚠️ Para audios necesito la clave de OpenAI. Agregá OPENAI_API_KEY en Railway.';
+      }
+    } catch(e) {
+      console.error('Audio error:', e.message);
+      reply = '⚠️ Error procesando el audio. Escribime el mensaje.';
+    }
+  } else {
+    reply = await agentReply(message || '(mensaje vacío)', data);
+  }
+
   res.set('Content-Type', 'text/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escapeXml(reply)}</Message></Response>`);
 });

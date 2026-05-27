@@ -54,6 +54,20 @@ button.ghost:hover{background:var(--bone2);color:var(--ink);box-shadow:none}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .iform{background:var(--bone);border:1px solid var(--bone3);border-radius:var(--rl);padding:16px;margin-bottom:12px}
 .divider{height:1px;background:var(--bone2);margin:16px 0}
+
+/* ── Voice ── */
+.voice-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--bone3);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;flex-shrink:0}
+.voice-btn:hover{border-color:var(--ink4);box-shadow:var(--shadow)}
+.voice-btn.listening{background:var(--red);border-color:var(--red);animation:pulse 1s ease infinite}
+.voice-btn.processing{background:var(--bone2);border-color:var(--bone3)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(204,34,0,0.3)}50%{box-shadow:0 0 0 8px rgba(204,34,0,0)}}
+#voice-status{font-size:12px;color:var(--ink4);text-align:center;margin-top:6px;min-height:16px}
+#chat-container{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--bone3);padding:12px 20px 20px;box-shadow:0 -4px 20px rgba(0,0,0,0.06);z-index:100;display:none}
+#chat-wrap{max-width:800px;margin:0 auto}
+#chat-history{max-height:200px;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:6px}
+.chat-msg-user{align-self:flex-end;background:var(--ink);color:var(--bone);padding:8px 12px;border-radius:12px 12px 3px 12px;font-size:13px;max-width:80%}
+.chat-msg-gus{align-self:flex-start;background:var(--bone2);color:var(--ink);padding:8px 12px;border-radius:12px 12px 12px 3px;font-size:13px;max-width:80%;white-space:pre-wrap}
+#chat-input-row{display:flex;gap:8px;align-items:center}
 .spin{animation:spin .8s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
 .fade{animation:fadeUp .22s ease both}
@@ -851,6 +865,130 @@ function renderSettings(){
       </div>
     </div>`;
 }
+
+// ── VOICE & CHAT ──────────────────────────────────────────────────
+let chatOpen = false;
+let isListening = false;
+let recognition = null;
+let chatHistory = [];
+
+function toggleChat(){
+  chatOpen = !chatOpen;
+  const el = document.getElementById('chat-container');
+  const fab = document.getElementById('chat-fab');
+  if(el) el.style.display = chatOpen ? 'block' : 'none';
+  if(fab) fab.textContent = chatOpen ? '✕' : '💬';
+  if(chatOpen) document.getElementById('chat-inp')?.focus();
+}
+
+function addChatMsg(text, role){
+  chatHistory.push({role, text});
+  const hist = document.getElementById('chat-history');
+  if(!hist) return;
+  const div = document.createElement('div');
+  div.className = role === 'user' ? 'chat-msg-user' : 'chat-msg-gus';
+  div.textContent = text;
+  hist.appendChild(div);
+  hist.scrollTop = hist.scrollHeight;
+}
+
+async function sendChat(){
+  const inp = document.getElementById('chat-inp');
+  const msg = inp?.value?.trim();
+  if(!msg) return;
+  inp.value = '';
+  addChatMsg(msg, 'user');
+  
+  // Show typing indicator
+  const hist = document.getElementById('chat-history');
+  const typing = document.createElement('div');
+  typing.className = 'chat-msg-gus';
+  typing.id = 'typing-ind';
+  typing.textContent = '...';
+  hist?.appendChild(typing);
+  hist.scrollTop = hist.scrollHeight;
+
+  try {
+    const r = await api('/api/ai', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt: msg, context: D.context, contextVida: D.contextVida, priorities: D.prioritiesLab, prioritiesVida: D.prioritiesVida })
+    });
+    document.getElementById('typing-ind')?.remove();
+    addChatMsg(r?.text || 'Error al responder.', 'gus');
+  } catch {
+    document.getElementById('typing-ind')?.remove();
+    addChatMsg('Error de conexión.', 'gus');
+  }
+}
+
+function toggleVoice(){
+  if(isListening){ stopListening(); return; }
+  startListening();
+}
+
+function startListening(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    document.getElementById('voice-status').textContent = '⚠️ Tu browser no soporta reconocimiento de voz. Usá Chrome.';
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.lang = 'es-AR';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+    isListening = true;
+    const btn = document.getElementById('voice-btn');
+    if(btn){ btn.className='voice-btn listening'; btn.textContent='⏹'; }
+    document.getElementById('voice-status').textContent = '🎙 Escuchando...';
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = Array.from(e.results).map(r=>r[0].transcript).join('');
+    const inp = document.getElementById('chat-inp');
+    if(inp) inp.value = transcript;
+    if(e.results[e.results.length-1].isFinal){
+      stopListening();
+      sendChat();
+    }
+  };
+
+  recognition.onerror = (e) => {
+    stopListening();
+    document.getElementById('voice-status').textContent = '⚠️ Error: ' + e.error;
+  };
+
+  recognition.onend = () => { if(isListening) stopListening(); };
+  recognition.start();
+}
+
+function stopListening(){
+  isListening = false;
+  recognition?.stop();
+  const btn = document.getElementById('voice-btn');
+  if(btn){ btn.className='voice-btn'; btn.textContent='🎙'; }
+  document.getElementById('voice-status').textContent = '';
+}
+
 </script>
+
+<!-- FLOATING CHAT / VOICE -->
+<div id="chat-container">
+  <div id="chat-wrap">
+    <div id="chat-history"></div>
+    <div id="chat-input-row">
+      <input type="text" id="chat-inp" placeholder="Preguntale algo a GUS..." onkeydown="if(event.key==='Enter')sendChat()" style="flex:1">
+      <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Hablar con GUS">🎙</button>
+      <button onclick="sendChat()" style="padding:9px 14px">↑</button>
+    </div>
+    <div id="voice-status"></div>
+  </div>
+</div>
+
+<!-- CHAT TOGGLE BUTTON -->
+<button onclick="toggleChat()" id="chat-fab" style="position:fixed;bottom:24px;right:24px;width:50px;height:50px;border-radius:50%;background:var(--ink);border:none;color:var(--bone);font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:101;transition:all .2s" title="Hablar con GUS">💬</button>
+
 </body>
 </html>
