@@ -49,7 +49,7 @@ ${(prioritiesVida || data.prioritiesVida || []).join('\n') || 'Sin check-in de v
 Respondé en español rioplatense. Máximo 200 palabras. Claro y directo.`;
 
     const msg = await ai.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 600,
       system: systemPrompt,
       messages: [{ role: 'user', content: prompt }]
@@ -272,7 +272,7 @@ INSTRUCCIONES:
 
   try {
     const r = await ai.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 600,
       system: systemPrompt,
       messages: [{ role: 'user', content: message }]
@@ -307,7 +307,7 @@ PRIORIDADES ACTIVAS: ${(data.priorities||[]).join(' / ')||'ninguna'}
 Terminá con 1 frase de coaching corta y potente.`;
 
   try {
-    const r = await ai.messages.create({ model:'claude-sonnet-4-20250514', max_tokens:600, messages:[{role:'user',content:prompt}] });
+    const r = await ai.messages.create({ model:'claude-sonnet-4-5', max_tokens:600, messages:[{role:'user',content:prompt}] });
     return r.content[0]?.text || '⚡ Error generando briefing.';
   } catch { return '⚡ No se pudo generar el briefing. Revisá el panel web.'; }
 }
@@ -364,7 +364,7 @@ async function chatReply(msg, data) {
 Contexto: ${(data.context||'').slice(0,600)}
 Mensaje: ${msg}`;
   try {
-    const r = await ai.messages.create({ model:'claude-sonnet-4-20250514', max_tokens:300, messages:[{role:'user',content:prompt}] });
+    const r = await ai.messages.create({ model:'claude-sonnet-4-5', max_tokens:300, messages:[{role:'user',content:prompt}] });
     return r.content[0]?.text || 'Error al procesar.';
   } catch { return '⚠️ Error. Intentá de nuevo.'; }
 }
