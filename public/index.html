@@ -186,11 +186,11 @@ let TRELLO_BOARDS=[],TRELLO_DATA={},TRELLO_LOADING=false;
   if(D.lastCheckInLab===TODAY){PHASE_LAB='done';const ref=D.reflections[TODAY+'_lab'];if(ref){QS_LAB=ref.questions||[];ANS_LAB=ref.answers||{};RESULT_LAB={priorities:D.prioritiesLab,coaching:ref.coaching};}}
   if(D.lastCheckInVida===TODAY){PHASE_VIDA='done';const ref=D.reflections[TODAY+'_vida'];if(ref){QS_VIDA=ref.questions||[];ANS_VIDA=ref.answers||{};RESULT_VIDA={priorities:D.prioritiesVida,coaching:ref.coaching,lifeReminder:ref.lifeReminder};}}
   if(CFG.trelloKey&&CFG.trelloToken)loadTrello();
-  setMode('lab');
+  await setMode('lab');
 })();
 
 /* ── MODE ── */
-function setMode(m){
+async function setMode(m){
   MODE=m;
   const isLab=m==='lab';
   const accent=isLab?'var(--blue)':'var(--green)';
@@ -412,10 +412,10 @@ async function delFin(lk,id){D.finanzas[lk]=D.finanzas[lk].filter(x=>x.id!==id);
 async function saveSettings(){CFG.trelloKey=document.getElementById('s-tk')?.value||'';CFG.trelloToken=document.getElementById('s-tt')?.value||'';localStorage.setItem('gus_cfg',JSON.stringify(CFG));const msg=document.getElementById('s-msg');if(msg){msg.style.display='flex';setTimeout(()=>msg.style.display='none',2000);}if(CFG.trelloKey&&CFG.trelloToken)await loadTrello();}
 
 /* ══ RENDER ══════════════════════════════════════════════════ */
-function render(){
+async function render(){
   renderTabs();
   if(TAB==='hoy')renderHoy();
-  else if(TAB==='lab')renderLab();
+  else if(TAB==='lab')await renderLab();
   else if(TAB==='vida')renderVida();
   else if(TAB==='finanzas')renderFinanzas();
   else if(TAB==='contexto')renderContexto();
@@ -491,7 +491,7 @@ function renderHoy(){
 }
 
 /* ── LABORAL ── */
-function renderLab(){
+async function renderLab(){
   const subs=[
     {id:'tareas',    label:'Tareas'},
     {id:'proyectos', label:'Proyectos'},
@@ -571,7 +571,7 @@ function renderLab(){
 
   else if(LAB_SUB==='calendario'){
     // Check auth status
-    const authStatus = await api('/auth/status');
+    const authStatus = await api('/auth/status').catch(()=>({connected:false}));
     const connected = authStatus?.connected;
     
     if(!connected){
@@ -580,8 +580,10 @@ function renderLab(){
         <a href="/auth/google" style="display:inline-block;background:var(--blue);color:#fff;padding:12px 24px;border-radius:var(--r);font-size:13px;font-weight:500;text-decoration:none;letter-spacing:.03em;text-transform:uppercase">Conectar Google Calendar</a>
       </div>`;
     } else {
-      const todayEvs = await api('/api/calendar/today');
-      const weekEvs  = await api('/api/calendar/week');
+      const [todayEvs, weekEvs] = await Promise.all([
+        api('/api/calendar/today').catch(()=>({events:[]})),
+        api('/api/calendar/week').catch(()=>({events:[]}))
+      ]);
       const events   = todayEvs?.events || [];
       const weekEvents = weekEvs?.events || [];
       
