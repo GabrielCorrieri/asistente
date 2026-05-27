@@ -748,6 +748,21 @@ function toggleDailyBoard(id){
   localStorage.setItem('gus_cfg',JSON.stringify(CFG));
   renderSettings();
 }
+async function toggleBoardPreview(id){
+  const prev=document.getElementById('prev-'+id);
+  if(!prev)return;
+  if(prev.style.display!=='none'){prev.style.display='none';return;}
+  prev.innerHTML='<div style="text-align:center;padding:10px;color:var(--ink4);font-size:12.5px"><span class="spin">◌</span> Cargando...</div>';
+  prev.style.display='block';
+  const d=await api(`/api/trello/cards?key=${CFG.trelloKey}&token=${CFG.trelloToken}&boardId=${id}`);
+  if(!d||!document.getElementById('prev-'+id))return;
+  const byList={};
+  (d.lists||[]).forEach(l=>byList[l.id]={name:l.name,cards:[]});
+  (d.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{if(byList[c.idList])byList[c.idList].cards.push(c);});
+  const overdue=(d.cards||[]).filter(c=>!c.dueComplete&&c.due&&new Date(c.due)<new Date());
+  const total=(d.cards||[]).filter(c=>!c.dueComplete).length;
+  document.getElementById('prev-'+id).innerHTML=`<div style="padding:12px;background:var(--bone);border-radius:var(--r);border:1px solid var(--bone3)"><div style="display:flex;gap:12px;margin-bottom:10px"><span style="font-size:12px;color:var(--ink3)">Activas: <strong style="color:var(--ink)">${total}</strong></span>${overdue.length?`<span style="font-size:12px;color:var(--red)">Vencidas: <strong>${overdue.length}</strong></span>`:''}</div>${Object.values(byList).filter(l=>l.cards.length).slice(0,5).map(l=>`<div style="margin-bottom:8px"><p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink4);font-weight:500;margin-bottom:4px">${l.name} (${l.cards.length})</p>${l.cards.slice(0,5).map(c=>`<div class="tcard">${c.name}${c.due?`<span style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace">${fmtDate(c.due)}</span>`:''}</div>`).join('')}</div>`).join('')}</div>`;
+}
 async function loadBoardPreview(id){
   if(!CFG.trelloKey||!CFG.trelloToken)return;
   const prev=document.getElementById('board-preview');
@@ -802,17 +817,19 @@ function renderSettings(){
       </div>
       ${TRELLO_BOARDS.map(b=>{
         const isDaily=dailyBoards.includes(b.id);
-        return `<div class="row" style="align-items:flex-start">
-          <div style="flex:1">
-            <p style="font-size:13.5px;font-weight:${isDaily?500:400}">${b.name}</p>
-            <p style="font-size:11.5px;color:var(--ink4)">${isDaily?'● Se incluye en el check-in y WhatsApp':'○ Disponible a pedido'}</p>
+        return `<div style="border-bottom:1px solid var(--bone2);padding:10px 0">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1">
+              <p style="font-size:13.5px;font-weight:${isDaily?500:400}">${b.name}</p>
+              <p style="font-size:11.5px;color:${isDaily?'var(--blue)':'var(--ink4)'};">${isDaily?'● Diario':'○ A pedido'}</p>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button onclick="toggleDailyBoard('${b.id}')" style="font-size:11.5px;${isDaily?'color:var(--blue);border-color:var(--blue-b);background:var(--blue-s)':''}">${isDaily?'✓ Diario':'+ Diario'}</button>
+              <button onclick="toggleBoardPreview('${b.id}')" style="font-size:11.5px">Ver ↓</button>
+            </div>
           </div>
-          <div style="display:flex;gap:6px;margin-top:2px">
-            <button onclick="toggleDailyBoard('${b.id}')" style="font-size:11.5px;${isDaily?'color:var(--blue);border-color:var(--blue-b);background:var(--blue-s)':''}">${isDaily?'✓ Diario':'+ Diario'}</button>
-            <button onclick="loadBoardPreview('${b.id}')" style="font-size:11.5px">Ver →</button>
-          </div>
+          <div id="prev-${b.id}" style="display:none;margin-top:10px"></div>
         </div>`;}).join('')}
-      <div id="board-preview" style="margin-top:12px"></div>
     </div>`:''}
 
     <div class="card">
