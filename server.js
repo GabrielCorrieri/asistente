@@ -82,40 +82,114 @@ app.get('/api/trello/daily-summary', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── WhatsApp (Twilio) ─────────────────────────────────────────────
+// ── WhatsApp Agent ────────────────────────────────────────────────
 app.post('/whatsapp', async (req, res) => {
   const body = req.body.Body?.trim() || '';
-  const cmd  = body.toLowerCase();
   const data = loadData();
-  let reply  = '';
-
-  if (['briefing','buenos dias','buen día','start'].includes(cmd)) {
-    reply = await buildBriefing(data, 'morning');
-  } else if (cmd === 'prioridades') {
-    const pLab = (data.prioritiesLab||[]);
-    const pVida = (data.prioritiesVida||[]);
-    if (!pLab.length && !pVida.length) reply = 'No hay prioridades. Hacé el check-in en GUS.';
-    else {
-      reply = '';
-      if (pLab.length) reply += '🔵 *Laboral:*\n' + pLab.map((p,i)=>`${i+1}. ${p}`).join('\n');
-      if (pVida.length) reply += '\n\n🟢 *Vida:*\n' + pVida.map((p,i)=>`${i+1}. ${p}`).join('\n');
-    }
-  } else if (cmd === 'finanzas') {
-    reply = buildFinanceSummary(data);
-  } else if (cmd === 'trello') {
-    reply = await buildTrelloDailySummary(data);
-  } else if (cmd.startsWith('trello ')) {
-    const name = cmd.replace('trello ','').trim();
-    reply = await buildTrelloBoardByName(data, name);
-  } else if (cmd === 'ayuda' || cmd === 'help') {
-    reply = '🤖 *Hola, soy GUS.*\n\n📋 *briefing* → resumen del día\n🎯 *prioridades* → tus top 3 laboral y vida\n💰 *finanzas* → cobros y pagos\n📌 *trello* → resumen de tableros diarios\n📌 *trello [nombre]* → estado de un tablero específico\n\nO escribime lo que sea.';
-  } else {
-    reply = await chatReply(body, data);
-  }
-
+  const reply = await agentReply(body, data);
   res.set('Content-Type', 'text/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escapeXml(reply)}</Message></Response>`);
 });
+
+
+// ── AGENT CORE ────────────────────────────────────────────────────
+async function agentReply(message, data) {
+  const key   = process.env.TRELLO_API_KEY;
+  const token = process.env.TRELLO_TOKEN;
+  const cfg   = JSON.parse(data.trelloCfg || '{}');
+  const dailyIds = cfg.dailyBoards || [];
+
+  // Build Trello context
+  let trelloCtx = '';
+  if (key && token && dailyIds.length) {
+    try {
+      const boards = await Promise.all(dailyIds.slice(0,4).map(async id => {
+        const [cr, lr] = await Promise.all([
+          fetch(`https://api.trello.com/1/boards/${id}/cards?key=${key}&token=${token}&fields=name,idList,due,dueComplete`),
+          fetch(`https://api.trello.com/1/boards/${id}/lists?key=${key}&token=${token}&fields=name,id`)
+        ]);
+        const [cards, lists] = await Promise.all([cr.json(), lr.json()]);
+        const br = await fetch(`https://api.trello.com/1/boards/${id}?key=${key}&token=${token}&fields=name`);
+        const board = await br.json();
+        const byList = {};
+        lists.forEach(l => byList[l.id] = { name: l.name, cards: [] });
+        cards.filter(c => !c.dueComplete).forEach(c => { if(byList[c.idList]) byList[c.idList].cards.push(c.name); });
+        return `Tablero "${board.name}": ` + Object.values(byList).filter(l=>l.cards.length).map(l=>`${l.name}: ${l.cards.slice(0,5).join(', ')}`).join(' | ');
+      }));
+      trelloCtx = boards.join('\n');
+    } catch(e) { trelloCtx = 'Error leyendo Trello'; }
+  }
+
+  // Build finance alerts
+  const oc = (data.finanzas?.cobros||[]).filter(c=>c.status==='pending'&&c.dueDate&&new Date(c.dueDate)<new Date());
+  const op = (data.finanzas?.propuestas||[]).filter(p=>p.status==='enviada');
+  const up = (data.finanzas?.pagos||[]).filter(p=>p.status==='pending'&&p.dueDate&&new Date(p.dueDate)<=new Date(Date.now()+7*864e5));
+  const finCtx = [
+    oc.length ? `Cobros vencidos: ${oc.map(c=>`${c.client} $${c.amount}`).join(', ')}` : '',
+    op.length ? `Propuestas sin respuesta: ${op.map(p=>`${p.client} - ${p.service}`).join(', ')}` : '',
+    up.length ? `Pagos próximos (7 días): ${up.map(p=>`${p.vendor} $${p.amount} (${p.dueDate})`).join(', ')}` : '',
+  ].filter(Boolean).join('\n') || 'Sin alertas financieras';
+
+  // Build priorities
+  const labPrio = (data.prioritiesLab||[]).map((p,i)=>`${i+1}. ${p}`).join('\n') || 'Sin check-in laboral de hoy';
+  const vidaPrio = (data.prioritiesVida||[]).map((p,i)=>`${i+1}. ${p}`).join('\n') || 'Sin check-in de vida de hoy';
+
+  // Pending tasks summary
+  const labTareas = (data.lab?.tareas||[]).filter(t=>!t.done).map(t=>t.text).slice(0,8).join(', ') || 'ninguna';
+  const labProy   = (data.lab?.proyectos||[]).filter(t=>!t.done).map(t=>t.text).slice(0,5).join(', ') || 'ninguno';
+
+  const now = new Date();
+  const hora = now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  const fecha = now.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+
+  const systemPrompt = `Sos GUS, el asistente personal e inteligente de ${data.context ? 'Gabriel' : 'un emprendedor argentino'}. Respondés por WhatsApp de forma natural, concisa y útil. Usás emojis con moderación y formato *negrita* de WhatsApp cuando suma claridad.
+
+CONTEXTO COMPLETO DEL USUARIO:
+${data.context || 'Sin contexto cargado aún.'}
+
+CONTEXTO DE VIDA PERSONAL:
+${data.contextVida || 'Sin contexto de vida cargado.'}
+
+ESTADO ACTUAL (${fecha}, ${hora}):
+Prioridades laborales de hoy:
+${labPrio}
+
+Prioridades de vida de hoy:
+${vidaPrio}
+
+Tareas laborales pendientes: ${labTareas}
+Proyectos activos: ${labProy}
+
+FINANZAS:
+${finCtx}
+
+TRELLO (tableros diarios):
+${trelloCtx || 'Sin tableros diarios configurados'}
+
+INSTRUCCIONES:
+- Respondés en español rioplatense (vos, che, etc.)
+- Máximo 300 palabras por respuesta
+- Si te piden un briefing o resumen del día, incluí prioridades + alertas financieras + Trello
+- Si te preguntan por finanzas, dás el detalle de cobros/pagos/propuestas
+- Si te preguntan por Trello o un proyecto, usás la info disponible
+- Si te dan una instrucción ("anotá esto", "recordame"), confirmás que lo deben agregar desde la app web
+- Si es una pregunta general de vida/coaching, respondés con el contexto personal que tenés
+- Nunca inventés datos que no tenés
+- Si algo requiere acción en la app, lo indicás claramente`;
+
+  try {
+    const r = await ai.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 600,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: message }]
+    });
+    return r.content[0]?.text || '⚠️ Error procesando tu mensaje.';
+  } catch(e) {
+    console.error('Agent error:', e.message);
+    return '⚠️ Error de conexión. Intentá de nuevo en un momento.';
+  }
+}
 
 // ── AI helpers ────────────────────────────────────────────────────
 async function buildBriefing(data, period) {
