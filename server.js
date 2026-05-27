@@ -103,37 +103,6 @@ app.get('/api/trello/daily-summary', async (req, res) => {
 });
 
 
-// ── Audio transcription (Whisper) ────────────────────────────────
-app.post('/api/transcribe', async (req, res) => {
-  try {
-    const { audioUrl } = req.body;
-    if (!audioUrl) return res.status(400).json({ error: 'No audioUrl' });
-
-    // Download audio from Twilio
-    const sid  = process.env.TWILIO_ACCOUNT_SID;
-    const auth = process.env.TWILIO_AUTH_TOKEN;
-    const audioRes = await fetch(audioUrl, {
-      headers: { 'Authorization': 'Basic ' + Buffer.from(`${sid}:${auth}`).toString('base64') }
-    });
-    const audioBuffer = await audioRes.arrayBuffer();
-
-    // Send to OpenAI Whisper
-    const FormData = require('form-data');
-    const form = new FormData();
-    form.append('file', Buffer.from(audioBuffer), { filename: 'audio.ogg', contentType: 'audio/ogg' });
-    form.append('model', 'whisper-1');
-    form.append('language', 'es');
-
-    const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, ...form.getHeaders() },
-      body: form
-    });
-    const whisperData = await whisperRes.json();
-    res.json({ text: whisperData.text || '' });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
 // ── WhatsApp Agent ────────────────────────────────────────────────
 app.post('/whatsapp', async (req, res) => {
   const data = loadData();

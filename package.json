@@ -1,7 +1,7 @@
 {
-  "name": "vida-assistant",
+  "name": "gus",
   "version": "1.0.0",
-  "description": "Asistente de vida personal — Web App + WhatsApp Bot",
+  "description": "GUS \u2014 Tu asistente personal",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -12,7 +12,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "node-cron": "^3.0.3",
-    "twilio": "^5.3.1"
+    "twilio": "^5.3.1",
+    "form-data": "^4.0.0",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.3"
