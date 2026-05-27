@@ -6,287 +6,206 @@
 <title>GUS — Tu asistente personal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
-
 :root{
-  --bone:#F4F2ED;
-  --bone2:#ECEAE4;
-  --bone3:#E0DDD6;
-  --ink:#0A0A0B;
-  --ink2:#3A3A3C;
-  --ink3:#8A8A8E;
-  --ink4:#BDBDBE;
-  --blue:#0040FF;
-  --blue-soft:rgba(0,64,255,0.08);
-  --blue-border:rgba(0,64,255,0.2);
-  --red:#CC2200;
-  --red-soft:rgba(204,34,0,0.07);
-  --amber:#B87800;
-  --amber-soft:rgba(184,120,0,0.08);
-  --green:#006633;
-  --green-soft:rgba(0,102,51,0.07);
-  --r:6px;--r-lg:12px;--r-xl:18px;
-  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.04);
-  --shadow-lg:0 2px 8px rgba(0,0,0,0.08),0 16px 48px rgba(0,0,0,0.08);
+  --bone:#F4F2ED; --bone2:#ECEAE3; --bone3:#DEDAD1;
+  --ink:#0A0A0B; --ink2:#3A3A3C; --ink3:#8A8A8E; --ink4:#C4C4C6;
+  --blue:#0040FF; --blue-s:rgba(0,64,255,0.07); --blue-b:rgba(0,64,255,0.18);
+  --green:#1A5C3A; --green-s:rgba(26,92,58,0.07); --green-b:rgba(26,92,58,0.18);
+  --red:#CC2200; --red-s:rgba(204,34,0,0.07);
+  --amber:#B87800; --amber-s:rgba(184,120,0,0.08);
+  --shadow:0 1px 3px rgba(0,0,0,0.07),0 4px 14px rgba(0,0,0,0.04);
+  --shadow-lg:0 2px 8px rgba(0,0,0,0.08),0 16px 48px rgba(0,0,0,0.07);
+  --r:6px; --rl:12px; --rxl:18px;
+  --accent:var(--blue); --accent-s:var(--blue-s); --accent-b:var(--blue-b);
 }
-
-body{
-  background:var(--bone);
-  color:var(--ink);
-  font-family:'DM Sans',system-ui,sans-serif;
-  font-size:14px;
-  font-weight:400;
-  line-height:1.5;
-  min-height:100vh;
-}
-
-/* ── Typography ─────────────────────────── */
-.serif{font-family:'Cormorant',Georgia,serif}
-.mono{font-family:'DM Mono',monospace}
-h1,h2{font-family:'Cormorant',Georgia,serif;font-weight:600;letter-spacing:-.02em}
-
-/* ── Inputs ─────────────────────────────── */
-input,textarea,select{
-  background:#fff;
-  border:1px solid var(--bone3);
-  border-radius:var(--r);
-  color:var(--ink);
-  font-family:'DM Sans',sans-serif;
-  font-size:13.5px;
-  padding:9px 13px;
-  width:100%;
-  transition:border-color .15s,box-shadow .15s;
-  outline:none;
-  -webkit-appearance:none;
-}
-input:focus,textarea:focus,select:focus{
-  border-color:var(--blue);
-  box-shadow:0 0 0 3px var(--blue-soft);
-}
+body{background:var(--bone);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+input,textarea,select{background:#fff;border:1px solid var(--bone3);border-radius:var(--r);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13.5px;padding:9px 13px;width:100%;transition:border-color .15s,box-shadow .15s;outline:none;-webkit-appearance:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-s)}
 textarea{resize:vertical;line-height:1.65}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%238A8A8E' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer}
-
-/* ── Buttons ────────────────────────────── */
-button{
-  background:#fff;
-  border:1px solid var(--bone3);
-  border-radius:var(--r);
-  color:var(--ink2);
-  cursor:pointer;
-  font-family:'DM Sans',sans-serif;
-  font-size:13px;
-  font-weight:500;
-  padding:8px 16px;
-  transition:all .15s;
-  white-space:nowrap;
-  letter-spacing:-.01em;
-}
+button{background:#fff;border:1px solid var(--bone3);border-radius:var(--r);color:var(--ink2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 16px;transition:all .15s;white-space:nowrap;letter-spacing:-.01em}
 button:hover{border-color:var(--ink4);color:var(--ink);box-shadow:var(--shadow)}
-button.primary{
-  background:var(--ink);
-  border-color:var(--ink);
-  color:var(--bone);
-  letter-spacing:.02em;
-  font-size:12.5px;
-  text-transform:uppercase;
-}
-button.primary:hover{background:var(--ink2);border-color:var(--ink2);box-shadow:var(--shadow)}
+button.primary{background:var(--ink);border-color:var(--ink);color:var(--bone);letter-spacing:.03em;font-size:12px;text-transform:uppercase}
+button.primary:hover{background:var(--ink2)}
+button.cta{background:var(--accent);border-color:var(--accent);color:#fff;letter-spacing:.03em;font-size:12px;text-transform:uppercase;width:100%;padding:12px;border-radius:10px}
+button.cta:hover{opacity:.9}
 button.ghost{background:transparent;border-color:transparent;padding:5px 8px;color:var(--ink3)}
-button.ghost:hover{background:var(--bone2);border-color:transparent;color:var(--ink);box-shadow:none}
-button.accent{background:var(--blue);border-color:var(--blue);color:#fff;letter-spacing:.02em;font-size:12.5px;text-transform:uppercase}
-button.accent:hover{background:#0035D9;border-color:#0035D9}
-
-/* ── Cards ──────────────────────────────── */
-.card{
-  background:#fff;
-  border:1px solid var(--bone3);
-  border-radius:var(--r-xl);
-  padding:24px;
-  margin-bottom:12px;
-  box-shadow:var(--shadow);
-}
-.card-warn{border-color:rgba(184,120,0,0.3);background:linear-gradient(135deg,#fff,#FDFBF6)}
-.card-danger{border-color:rgba(204,34,0,0.2);background:linear-gradient(135deg,#fff,#FDF8F7)}
-
-/* ── Section header ─────────────────────── */
+button.ghost:hover{background:var(--bone2);color:var(--ink);box-shadow:none}
+.card{background:#fff;border:1px solid var(--bone3);border-radius:var(--rxl);padding:24px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-warn{border-color:rgba(184,120,0,.25)!important}
+.card-danger{border-color:rgba(204,34,0,.2)!important}
 .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bone2)}
-.sh-l{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--ink);font-size:13.5px;letter-spacing:-.01em}
-.sh-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-
-/* ── Rows ───────────────────────────────── */
+.sh-l{display:flex;align-items:center;gap:10px;font-weight:500;font-size:13.5px;letter-spacing:-.01em}
+.icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bone2)}
 .row:last-child{border-bottom:none}
-
-/* ── Tabs ───────────────────────────────── */
-.tab-bar{
-  display:flex;
-  gap:2px;
-  margin-bottom:20px;
-  background:var(--bone2);
-  padding:3px;
-  border-radius:var(--r-lg);
-  border:1px solid var(--bone3);
-}
-.tab{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  padding:8px 16px;flex:1;
-  border-radius:10px;
-  font-size:12.5px;font-weight:500;letter-spacing:.01em;
-  color:var(--ink3);
-  border:1px solid transparent;background:transparent;
-  transition:all .2s;position:relative;
-}
-.tab.on{
-  background:#fff;
-  border-color:var(--bone3);
-  color:var(--ink);
-  box-shadow:0 1px 4px rgba(0,0,0,0.07);
-}
-.tab .dot{
-  position:absolute;top:-4px;right:-4px;
-  width:16px;height:16px;border-radius:50%;
-  background:var(--red);color:#fff;
-  font-size:9px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;
-  border:2px solid var(--bone);
-}
-
-/* ── Pills ──────────────────────────────── */
-.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.pill{
-  display:flex;align-items:center;gap:6px;
-  padding:6px 14px;border-radius:30px;
-  font-size:12.5px;font-weight:500;
-  cursor:pointer;
-  border:1px solid var(--bone3);
-  background:#fff;color:var(--ink3);
-  transition:all .15s;
-  box-shadow:0 1px 2px rgba(0,0,0,0.04);
-}
-.pill.on{border-color:var(--ink);background:var(--ink);color:var(--bone)}
-
-/* ── Info boxes ─────────────────────────── */
-.ibox{padding:12px 16px;border-radius:var(--r-lg);margin-bottom:10px;font-size:13px;line-height:1.65}
-.ibox.coach{background:var(--blue-soft);border:1px solid var(--blue-border);color:var(--blue)}
-.ibox.warn{background:var(--amber-soft);border:1px solid rgba(184,120,0,0.25);color:var(--amber)}
-.ibox.life{background:var(--red-soft);border:1px solid rgba(204,34,0,0.2);color:var(--red)}
-.ibox.success{background:var(--green-soft);border:1px solid rgba(0,102,51,0.2);color:var(--green)}
-
-/* ── Task check ─────────────────────────── */
-.chk{
-  width:18px;height:18px;border-radius:5px;
-  border:1.5px solid var(--bone3);
-  background:#fff;cursor:pointer;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .15s;
-}
+.chk{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--bone3);background:#fff;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .chk.done{background:var(--ink);border-color:var(--ink)}
 .chk.done::after{content:'✓';font-size:10px;color:#fff;font-weight:700}
-
-/* ── Misc ───────────────────────────────── */
-.badge{font-size:10.5px;padding:2px 8px;border-radius:20px;background:var(--bone2);border:1px solid var(--bone3);color:var(--ink3);font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+.badge{font-size:10.5px;padding:2px 8px;border-radius:20px;background:var(--bone2);border:1px solid var(--bone3);color:var(--ink3);font-weight:500;letter-spacing:.03em;text-transform:uppercase}
+.ibox{padding:12px 16px;border-radius:var(--rl);margin-bottom:10px;font-size:13px;line-height:1.65}
+.ibox.coach{background:var(--accent-s);border:1px solid var(--accent-b);color:var(--accent)}
+.ibox.warn{background:var(--amber-s);border:1px solid rgba(184,120,0,.25);color:var(--amber)}
+.ibox.life{background:var(--red-s);border:1px solid rgba(204,34,0,.2);color:var(--red)}
 .empty{text-align:center;padding:28px 16px;color:var(--ink4);font-size:13px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.iform{background:var(--bone);border:1px solid var(--bone3);border-radius:var(--rl);padding:16px;margin-bottom:12px}
+.divider{height:1px;background:var(--bone2);margin:16px 0}
 .spin{animation:spin .8s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.fade{animation:fadeUp .25s ease both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── Layout ─────────────────────────────── */
-#wrap{max-width:780px;margin:0 auto;padding:32px 20px 60px}
-
-/* ── Header ─────────────────────────────── */
-.hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
-.hdr-logo{display:flex;align-items:baseline;gap:10px}
-.hdr-name{font-family:'Cormorant',serif;font-size:28px;font-weight:700;letter-spacing:-.04em;color:var(--ink)}
-.hdr-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);margin-bottom:4px;flex-shrink:0}
-.hdr-greeting{font-size:12px;color:var(--ink3);margin-top:3px;letter-spacing:.02em;text-transform:uppercase;font-weight:500}
-.hdr-save{font-size:12px;color:var(--green);display:none;align-items:center;gap:5px;font-weight:500}
-
-/* ── Trello cards ───────────────────────── */
-.tcard{
-  background:var(--bone);border:1px solid var(--bone3);
-  border-radius:var(--r);padding:8px 12px;margin-bottom:6px;
-  font-size:12.5px;color:var(--ink2);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.tcard-due{font-size:11px;color:var(--amber);font-weight:500;font-family:'DM Mono',monospace}
-
-/* ── Priority numbers ───────────────────── */
+.fade{animation:fadeUp .22s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .prio-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--bone2);align-items:flex-start}
-.prio-num{font-family:'Cormorant',serif;font-size:22px;font-weight:600;color:var(--bone3);min-width:24px;line-height:1}
-
-/* ── Status dot ─────────────────────────── */
+.prio-num{font-family:'Cormorant',serif;font-size:24px;font-weight:600;color:var(--bone3);min-width:24px;line-height:1}
+.tcard{background:var(--bone);border:1px solid var(--bone3);border-radius:var(--r);padding:8px 12px;margin-bottom:6px;font-size:12.5px;color:var(--ink2);display:flex;align-items:center;justify-content:space-between}
 .sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:30px;font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid var(--bone3);background:#fff;color:var(--ink3);transition:all .15s}
 
-/* ── Form inline ────────────────────────── */
-.iform{background:var(--bone);border:1px solid var(--bone3);border-radius:var(--r-lg);padding:16px;margin-bottom:12px}
+/* ── MODE SWITCHER ── */
+#wrap{max-width:800px;margin:0 auto;padding:28px 20px 60px}
+.mode-bar{display:flex;background:var(--bone2);border:1px solid var(--bone3);border-radius:14px;padding:4px;margin-bottom:24px;gap:3px}
+.mode-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--ink3);transition:all .2s;letter-spacing:-.01em}
+.mode-btn.on{background:#fff;border-color:var(--bone3);box-shadow:var(--shadow)}
+.mode-btn.on.lab{color:var(--blue)}
+.mode-btn.on.vida{color:var(--green)}
 
-/* ── Divider ────────────────────────────── */
-.divider{height:1px;background:var(--bone2);margin:16px 0}
+/* ── HEADER ── */
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.hdr-name{font-family:'Cormorant',serif;font-size:30px;font-weight:700;letter-spacing:-.04em}
+.hdr-dot{width:8px;height:8px;border-radius:50%;margin-left:6px;margin-bottom:6px;flex-shrink:0;transition:background .3s}
+.hdr-sub{font-size:11.5px;color:var(--ink3);margin-top:3px;letter-spacing:.03em;text-transform:uppercase;font-weight:500}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:2px;margin-bottom:20px;background:var(--bone2);padding:3px;border-radius:var(--rl);border:1px solid var(--bone3)}
+.tab{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;flex:1;border-radius:10px;font-size:12.5px;font-weight:500;color:var(--ink3);border:1px solid transparent;background:transparent;transition:all .2s;position:relative;letter-spacing:.005em}
+.tab.on{background:#fff;border-color:var(--bone3);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.tab .dot{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bone)}
 </style>
 </head>
 <body>
 <div id="wrap">
 
-  <!-- HEADER -->
-  <div class="hdr">
-    <div>
-      <div class="hdr-logo">
-        <span class="hdr-name">GUS</span>
-        <div class="hdr-dot"></div>
-      </div>
-      <div class="hdr-greeting" id="hdr-greeting"></div>
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div style="display:flex;align-items:baseline">
+      <span class="hdr-name">GUS</span>
+      <div class="hdr-dot" id="hdr-dot"></div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div class="hdr-save" id="save-ind">
-        <span style="font-size:14px">·</span> Guardado
-      </div>
-      <button class="ghost" onclick="go('settings')" style="font-size:18px;padding:6px 9px" title="Ajustes">⚙</button>
-    </div>
+    <div class="hdr-sub" id="hdr-sub"></div>
   </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <div id="save-ind" style="display:none;align-items:center;gap:5px;font-size:12px;color:var(--green);font-weight:500">✓ Guardado</div>
+    <button class="ghost" onclick="go('settings')" style="font-size:18px;padding:6px 10px">⚙</button>
+  </div>
+</div>
 
-  <!-- TABS -->
-  <div class="tab-bar" id="tabs"></div>
+<!-- MODE SWITCHER -->
+<div class="mode-bar">
+  <button class="mode-btn lab" id="mode-lab" onclick="setMode('lab')">
+    <span style="font-size:15px">◈</span> Laboral
+  </button>
+  <button class="mode-btn vida" id="mode-vida" onclick="setMode('vida')">
+    <span style="font-size:15px">◉</span> Vida
+  </button>
+</div>
 
-  <!-- VIEWS -->
-  <div id="view-hoy"></div>
-  <div id="view-areas" style="display:none"></div>
-  <div id="view-finanzas" style="display:none"></div>
-  <div id="view-contexto" style="display:none"></div>
-  <div id="view-settings" style="display:none"></div>
+<!-- TABS -->
+<div class="tab-bar" id="tabs"></div>
+
+<!-- VIEWS -->
+<div id="view-hoy"></div>
+<div id="view-lab" style="display:none"></div>
+<div id="view-vida" style="display:none"></div>
+<div id="view-finanzas" style="display:none"></div>
+<div id="view-contexto" style="display:none"></div>
+<div id="view-settings" style="display:none"></div>
 </div>
 
 <script>
 const TODAY=new Date().toISOString().split('T')[0], DOW=new Date().getDay();
 
-/* ── State ─────────────────────────────────────────────────── */
-let D={context:'',areas:{trabajo:{tasks:[],notes:''},casa:{tasks:[],notes:''},sociales:{tasks:[],notes:''},estudio:{tasks:[],notes:''},hobbies:{log:[],notes:''},fitness:{log:[],notes:''}},finanzas:{cobros:[],pagos:[],propuestas:[]},priorities:[],reflections:{}};
-let TAB='hoy',AREA='trabajo',PHASE='idle',QS=[],ANS={},RESULT=null,FIN_FORM=null;
-let TRELLO_BOARDS=[],TRELLO_DATA={},TRELLO_LOADING=false;
+/* ── STATE ── */
+let D={
+  context:'', contextVida:'',
+  lastCheckInLab:null, lastCheckInVida:null,
+  prioritiesLab:[], prioritiesVida:[],
+  reflections:{},
+  lab:{
+    tareas:[],
+    proyectos:[],
+    recordatorios:[],
+    reuniones:[],
+    notas:''
+  },
+  vida:{
+    pareja:{tasks:[],notas:''},
+    amigos:{tasks:[],notas:''},
+    familia:{tasks:[],notas:''},
+    recordatorios:[],
+    hobbies:{log:[],notas:''},
+    fitness:{log:[],notas:''},
+    notas:''
+  },
+  finanzas:{cobros:[],pagos:[],propuestas:[],gastos:[]}
+};
+let MODE='lab', TAB='hoy';
+let PHASE_LAB='idle', PHASE_VIDA='idle';
+let QS_LAB=[], ANS_LAB={}, RESULT_LAB=null;
+let QS_VIDA=[], ANS_VIDA={}, RESULT_VIDA=null;
+let FIN_FORM=null, LAB_SUB='tareas', VIDA_SUB='pareja';
 let CFG={trelloKey:'',trelloToken:'',activeBoardId:''};
+let TRELLO_BOARDS=[],TRELLO_DATA={},TRELLO_LOADING=false;
 
-/* ── Init ──────────────────────────────────────────────────── */
+/* ── INIT ── */
 (async()=>{
   const h=new Date().getHours();
   const g=h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
-  const d=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
-  document.getElementById('hdr-greeting').textContent=`${g} — ${d}`;
+  const dstr=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('hdr-sub').textContent=`${g} — ${dstr}`;
   try{const r=await fetch('/api/data');if(r.ok){const j=await r.json();D=deepMerge(D,j);}}catch{}
   CFG=JSON.parse(localStorage.getItem('gus_cfg')||'{"trelloKey":"","trelloToken":"","activeBoardId":""}');
-  if(D.lastCheckIn===TODAY){PHASE='done';const ref=D.reflections[TODAY];if(ref){QS=ref.questions||[];ANS=ref.answers||{};RESULT={priorities:D.priorities,coaching:ref.coaching,lifeReminder:ref.lifeReminder};}}
+  if(D.lastCheckInLab===TODAY){PHASE_LAB='done';const ref=D.reflections[TODAY+'_lab'];if(ref){QS_LAB=ref.questions||[];ANS_LAB=ref.answers||{};RESULT_LAB={priorities:D.prioritiesLab,coaching:ref.coaching};}}
+  if(D.lastCheckInVida===TODAY){PHASE_VIDA='done';const ref=D.reflections[TODAY+'_vida'];if(ref){QS_VIDA=ref.questions||[];ANS_VIDA=ref.answers||{};RESULT_VIDA={priorities:D.prioritiesVida,coaching:ref.coaching,lifeReminder:ref.lifeReminder};}}
   if(CFG.trelloKey&&CFG.trelloToken)loadTrello();
-  render();
+  setMode('lab');
 })();
 
-/* ── API ───────────────────────────────────────────────────── */
-async function api(url,opts={}){try{const r=await fetch(url,opts);return r.ok?r.json():null;}catch{return null;}}
-async function aiCall(prompt){const r=await api('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});return r?.text||'';}
-async function save(silent=false){await api('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D)});if(!silent){const el=document.getElementById('save-ind');if(el){el.style.display='flex';setTimeout(()=>el.style.display='none',1800);}}}
+/* ── MODE ── */
+function setMode(m){
+  MODE=m;
+  const isLab=m==='lab';
+  const accent=isLab?'var(--blue)':'var(--green)';
+  const accentS=isLab?'var(--blue-s)':'var(--green-s)';
+  const accentB=isLab?'var(--blue-b)':'var(--green-b)';
+  document.documentElement.style.setProperty('--accent',isLab?'#0040FF':'#1A5C3A');
+  document.documentElement.style.setProperty('--accent-s',isLab?'rgba(0,64,255,0.07)':'rgba(26,92,58,0.07)');
+  document.documentElement.style.setProperty('--accent-b',isLab?'rgba(0,64,255,0.18)':'rgba(26,92,58,0.18)');
+  document.getElementById('hdr-dot').style.background=isLab?'#0040FF':'#1A5C3A';
+  document.getElementById('mode-lab').className='mode-btn lab'+(isLab?' on':'');
+  document.getElementById('mode-vida').className='mode-btn vida'+(isLab?'':' on');
+  if(TAB!=='settings'&&TAB!=='finanzas'&&TAB!=='contexto') TAB='hoy';
+  render();
+}
 
-/* ── Trello ────────────────────────────────────────────────── */
+/* ── NAV ── */
+function go(t){TAB=t;FIN_FORM=null;['hoy','lab','vida','finanzas','contexto','settings'].forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.style.display=v===t?'block':'none';});render();}
+function goLabSub(s){LAB_SUB=s;renderLab();}
+function goVidaSub(s){VIDA_SUB=s;renderVida();}
+
+/* ── API ── */
+async function api(url,opts={}){try{const r=await fetch(url,opts);return r.ok?r.json():null;}catch{return null;}}
+async function aiCall(p){const r=await api('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p})});return r?.text||'';}
+async function save(silent=false){
+  await api('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D)});
+  if(!silent){const el=document.getElementById('save-ind');if(el){el.style.display='flex';setTimeout(()=>el.style.display='none',1800);}}
+}
+
+/* ── TRELLO ── */
 async function loadTrello(){
   if(!CFG.trelloKey||!CFG.trelloToken)return;
   TRELLO_LOADING=true;
@@ -294,27 +213,15 @@ async function loadTrello(){
   if(b&&!b.error)TRELLO_BOARDS=b;
   if(CFG.activeBoardId)await loadBoard(CFG.activeBoardId);
   TRELLO_LOADING=false;
-  if(TAB==='areas'&&AREA==='trabajo')renderAreas();
+  if(TAB==='lab')renderLab();
 }
 async function loadBoard(id){
   const d=await api(`/api/trello/cards?key=${CFG.trelloKey}&token=${CFG.trelloToken}&boardId=${id}`);
   if(d&&!d.error){TRELLO_DATA=d;CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));}
 }
+async function selectBoard(id){CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));await loadBoard(id);renderLab();}
 
-/* ── Nav ───────────────────────────────────────────────────── */
-function go(t){TAB=t;FIN_FORM=null;['hoy','areas','finanzas','contexto','settings'].forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.style.display=v===t?'block':'none';});render();}
-function goArea(a){AREA=a;render();}
-
-/* ── Helpers ───────────────────────────────────────────────── */
-const AC={
-  trabajo:{label:'Trabajo',  color:'#0040FF',bg:'rgba(0,64,255,0.07)',   icon:'◈'},
-  casa:   {label:'Casa',     color:'#006633',bg:'rgba(0,102,51,0.07)',    icon:'◉'},
-  sociales:{label:'Sociales',color:'#B87800',bg:'rgba(184,120,0,0.08)',   icon:'◎'},
-  estudio:{label:'Estudio',  color:'#6600CC',bg:'rgba(102,0,204,0.07)',   icon:'◐'},
-  hobbies:{label:'Hobbies',  color:'#007A99',bg:'rgba(0,122,153,0.07)',   icon:'◑'},
-  fitness:{label:'Fitness',  color:'#CC2200',bg:'rgba(204,34,0,0.07)',    icon:'◒'},
-};
-function allPending(){return Object.entries(D.areas).flatMap(([a,v])=>(v.tasks||[]).filter(t=>!t.done).map(t=>({...t,area:a})));}
+/* ── HELPERS ── */
 function alerts(){
   const oc=(D.finanzas?.cobros||[]).filter(c=>c.status==='pending'&&c.dueDate&&new Date(c.dueDate)<new Date());
   const up=(D.finanzas?.pagos||[]).filter(p=>p.status==='pending'&&p.dueDate&&new Date(p.dueDate)<=new Date(Date.now()+7*864e5));
@@ -323,78 +230,164 @@ function alerts(){
 }
 function fmtDate(d){if(!d)return'';try{return new Date(d+'T12:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});}catch{return d;}}
 function deepMerge(a,b){const r={...a};for(const k in b){if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))r[k]=deepMerge(a[k]||{},b[k]);else if(b[k]!==undefined)r[k]=b[k];}return r;}
+function label(t){return{lab:'Laboral',vida:'Vida'}[t]||t;}
 
-/* ── AI Check-in ───────────────────────────────────────────── */
-async function startCheckIn(){
-  if(!D.context?.trim()){go('contexto');return;}
-  PHASE='loading_q';QS=[];ANS={};RESULT=null;renderHoy();
+/* ── CHECK-IN LABORAL ── */
+async function startCheckInLab(){
+  if(!D.context?.trim()){TAB='contexto';go('contexto');return;}
+  PHASE_LAB='loading_q';QS_LAB=[];ANS_LAB={};RESULT_LAB=null;renderHoy();
   const a=alerts();
-  const day=DOW===1?'lunes (inicio de semana)':DOW===5?'viernes (cierre de semana)':DOW===0?'domingo':'día laboral';
-  const pending=Object.entries(D.areas).map(([k,v])=>`${AC[k].label}: ${(v.tasks||[]).filter(t=>!t.done).length} tareas`).join(', ');
-  const prompt=`Sos el asistente de vida y coach personal de este usuario.
+  const day=DOW===1?'lunes':DOW===5?'viernes':DOW===0?'domingo':'día laboral';
+  const tarPend=(D.lab.tareas||[]).filter(t=>!t.done).length;
+  const proyPend=(D.lab.proyectos||[]).filter(p=>!p.done).length;
+  const reunHoy=(D.lab.reuniones||[]).filter(r=>r.date===TODAY).length;
+  const prompt=`Sos GUS, el asistente laboral de un emprendedor argentino.
 
-CONTEXTO DE VIDA:
+CONTEXTO LABORAL:
 ${D.context}
 
-ESTADO:
-- Día: ${day}
-- Pendientes: ${pending}
+ESTADO HOY (${day}):
+- Tareas pendientes: ${tarPend}
+- Proyectos activos: ${proyPend}
+- Reuniones hoy: ${reunHoy}
 - Cobros vencidos: ${a.oc.length}
 - Propuestas sin respuesta: ${a.op.length}
 
-Generá preguntas de check-in MUY específicas usando el contexto real (mencioná proyectos, personas, situaciones concretas).
-- 4 preguntas normalmente, 5 si hay mucho por resolver
-- Cubrí al menos 2 áreas de vida distintas
-- Si es lunes: foco en planificación semanal
-- Directas, segunda persona (vos)
+Generá 4-5 preguntas de check-in LABORAL muy específicas. Mencioná proyectos reales del contexto. Foco: productividad, proyectos, dinero, equipo.
+Si es lunes: planificación semanal. Si es viernes: cierre y retrospectiva.
+Segunda persona (vos). Directas.
 
 SOLO JSON: {"questions":["p1","p2","p3","p4"]}`;
   const txt=await aiCall(prompt);
-  try{QS=JSON.parse(txt.replace(/```json|```/g,'').trim()).questions||fallbackQ();}catch{QS=fallbackQ();}
-  PHASE='answering';renderHoy();
+  try{QS_LAB=JSON.parse(txt.replace(/```json|```/g,'').trim()).questions||fallbackQLab();}catch{QS_LAB=fallbackQLab();}
+  PHASE_LAB='answering';renderHoy();
 }
-function fallbackQ(){return["¿Qué es lo más importante que tenés que resolver hoy?","¿Hay algo que venís postergando que te pesa?","¿Cómo está tu energía y tu vida personal?","¿Qué va a hacer que hoy sea un buen día?"];}
+function fallbackQLab(){return["¿Cuál es la tarea más importante que tenés que cerrar hoy?","¿Hay algún proyecto trabado que necesite tu atención?","¿Tenés cobros o propuestas pendientes que debés seguir?","¿Cómo está el equipo y qué necesitan de vos hoy?"];}
 
-async function submitCheckIn(){
-  if(!Object.values(ANS).some(v=>v?.trim()))return;
-  PHASE='loading_p';renderHoy();
+async function submitCheckInLab(){
+  if(!Object.values(ANS_LAB).some(v=>v?.trim()))return;
+  PHASE_LAB='loading_p';renderHoy();
   const a=alerts();
-  const qa=QS.map((q,i)=>`P: ${q}\nR: ${ANS[i]||'(sin respuesta)'}`).join('\n\n');
-  const prompt=`Sos el coach ejecutivo y de vida de este usuario.
+  const qa=QS_LAB.map((q,i)=>`P: ${q}\nR: ${ANS_LAB[i]||'—'}`).join('\n\n');
+  const prompt=`Sos GUS, coach ejecutivo de un emprendedor argentino.
 
-CONTEXTO:
-${D.context}
-
-CHECK-IN:
-${qa}
-
+CONTEXTO: ${D.context}
+CHECK-IN LABORAL: ${qa}
 ALERTAS: cobros vencidos: ${a.oc.map(c=>`${c.client} $${c.amount}`).join(',')||'ninguno'} | propuestas: ${a.op.map(p=>p.client).join(',')||'ninguna'}
 
-Generá (específico, mencionando situaciones reales del contexto):
-1. TOP 3 prioridades concretas y accionables para hoy
-2. Insight de coaching de 2 líneas — potente, personalizado
-3. Recordatorio de vida personal si detectás algo descuidado — o exactamente "null"
-
-SOLO JSON: {"priorities":["p1","p2","p3"],"coaching":"texto","lifeReminder":"texto o null"}`;
+Generá:
+1. TOP 3 prioridades laborales concretas y accionables para hoy
+2. Insight de coaching ejecutivo — 2 líneas, potente y específico
+Solo JSON: {"priorities":["p1","p2","p3"],"coaching":"texto"}`;
   const txt=await aiCall(prompt);
-  try{RESULT=JSON.parse(txt.replace(/```json|```/g,'').trim());}
-  catch{RESULT={priorities:["Revisar emails urgentes","Avanzar tarea principal del día","Proteger tiempo personal"],coaching:"Lo que no agendás, no existe. Tu energía es finita — usala con intención.",lifeReminder:"null"};}
-  D={...D,priorities:RESULT.priorities||[],lastCheckIn:TODAY,reflections:{...D.reflections,[TODAY]:{questions:QS,answers:ANS,coaching:RESULT.coaching,lifeReminder:RESULT.lifeReminder}}};
-  await save(true);PHASE='done';renderHoy();
+  try{RESULT_LAB=JSON.parse(txt.replace(/```json|```/g,'').trim());}catch{RESULT_LAB={priorities:["Cerrar tarea más urgente","Revisar propuestas pendientes","Comunicar avances al equipo"],coaching:"Un emprendedor que no prioriza, hace todo a medias. Elegí 3 cosas y hacelas bien."};}
+  D={...D,prioritiesLab:RESULT_LAB.priorities||[],lastCheckInLab:TODAY,reflections:{...D.reflections,[TODAY+'_lab']:{questions:QS_LAB,answers:ANS_LAB,coaching:RESULT_LAB.coaching}}};
+  await save(true);PHASE_LAB='done';renderHoy();
 }
 
-/* ── Tasks ─────────────────────────────────────────────────── */
-async function addTask(area){const el=document.getElementById('ti-'+area);if(!el||!el.value.trim())return;D.areas[area].tasks=[...(D.areas[area].tasks||[]),{id:Date.now(),text:el.value.trim(),done:false,date:TODAY}];await save();el.value='';TAB==='hoy'?renderHoy():renderAreas();}
-async function toggleTask(area,id){D.areas[area].tasks=D.areas[area].tasks.map(t=>t.id===id?{...t,done:!t.done}:t);await save();TAB==='hoy'?renderHoy():renderAreas();}
-async function delTask(area,id){D.areas[area].tasks=D.areas[area].tasks.filter(t=>t.id!==id);await save();TAB==='hoy'?renderHoy():renderAreas();}
-async function saveNotes(area){const el=document.getElementById('notes-'+area);if(el){D.areas[area].notes=el.value;await save();}}
-async function addHoyTask(){const el=document.getElementById('hoy-inp');if(!el||!el.value.trim())return;D.areas.trabajo.tasks=[...(D.areas.trabajo.tasks||[]),{id:Date.now(),text:el.value.trim(),done:false,date:TODAY}];await save();el.value='';renderHoy();}
+/* ── CHECK-IN VIDA ── */
+async function startCheckInVida(){
+  if(!D.contextVida?.trim()&&!D.context?.trim()){TAB='contexto';go('contexto');return;}
+  PHASE_VIDA='loading_q';QS_VIDA=[];ANS_VIDA={};RESULT_VIDA=null;renderHoy();
+  const ctx=D.contextVida||D.context;
+  const day=DOW===1?'lunes':DOW===5?'viernes':DOW===0?'domingo':'día de semana';
+  const prompt=`Sos GUS, el asistente de vida personal de un emprendedor argentino.
 
-/* ── Finance ───────────────────────────────────────────────── */
+CONTEXTO PERSONAL:
+${ctx}
+
+Generá 4 preguntas de check-in de VIDA PERSONAL muy específicas. Mencioná situaciones reales del contexto (pareja, familia, salud, hobbies). Foco: bienestar, relaciones, energía, vida fuera del trabajo.
+Segunda persona (vos). Cálidas pero directas.
+
+SOLO JSON: {"questions":["p1","p2","p3","p4"]}`;
+  const txt=await aiCall(prompt);
+  try{QS_VIDA=JSON.parse(txt.replace(/```json|```/g,'').trim()).questions||fallbackQVida();}catch{QS_VIDA=fallbackQVida();}
+  PHASE_VIDA='answering';renderHoy();
+}
+function fallbackQVida(){return["¿Cómo está tu energía y tu estado de ánimo hoy?","¿Le estás dando tiempo de calidad a tu pareja?","¿Cuándo fue la última vez que hiciste algo solo para vos?","¿Hay algo personal que estás postergando?"];}
+
+async function submitCheckInVida(){
+  if(!Object.values(ANS_VIDA).some(v=>v?.trim()))return;
+  PHASE_VIDA='loading_p';renderHoy();
+  const ctx=D.contextVida||D.context;
+  const qa=QS_VIDA.map((q,i)=>`P: ${q}\nR: ${ANS_VIDA[i]||'—'}`).join('\n\n');
+  const prompt=`Sos GUS, coach de vida de un emprendedor argentino.
+
+CONTEXTO: ${ctx}
+CHECK-IN VIDA: ${qa}
+
+Generá:
+1. TOP 3 prioridades de vida personal para hoy/esta semana
+2. Insight de coaching personal — 2 líneas, cálido y específico
+3. Recordatorio de algo que no debe descuidar — o "null"
+Solo JSON: {"priorities":["p1","p2","p3"],"coaching":"texto","lifeReminder":"texto o null"}`;
+  const txt=await aiCall(prompt);
+  try{RESULT_VIDA=JSON.parse(txt.replace(/```json|```/g,'').trim());}catch{RESULT_VIDA={priorities:["Tiempo de calidad con tu pareja","Actividad física hoy","Desconectarte del trabajo a la noche"],coaching:"El trabajo te puede esperar. Las personas que amás, a veces no.",lifeReminder:"null"};}
+  D={...D,prioritiesVida:RESULT_VIDA.priorities||[],lastCheckInVida:TODAY,reflections:{...D.reflections,[TODAY+'_vida']:{questions:QS_VIDA,answers:ANS_VIDA,coaching:RESULT_VIDA.coaching,lifeReminder:RESULT_VIDA.lifeReminder}}};
+  await save(true);PHASE_VIDA='done';renderHoy();
+}
+
+/* ── TASKS & ITEMS ── */
+async function addItem(list,text){if(!text?.trim())return;D.lab[list]=[...(D.lab[list]||[]),{id:Date.now(),text:text.trim(),done:false,date:TODAY}];await save();}
+async function toggleItem(list,id){D.lab[list]=D.lab[list].map(t=>t.id===id?{...t,done:!t.done}:t);await save();}
+async function delItem(list,id){D.lab[list]=D.lab[list].filter(t=>t.id!==id);await save();}
+
+async function addVidaTask(sub,text){if(!text?.trim())return;D.vida[sub].tasks=[...(D.vida[sub].tasks||[]),{id:Date.now(),text:text.trim(),done:false,date:TODAY}];await save();}
+async function toggleVidaTask(sub,id){D.vida[sub].tasks=D.vida[sub].tasks.map(t=>t.id===id?{...t,done:!t.done}:t);await save();}
+async function delVidaTask(sub,id){D.vida[sub].tasks=D.vida[sub].tasks.filter(t=>t.id!==id);await save();}
+
+async function addRec(mode,text,date){
+  if(!text?.trim())return;
+  const list=mode==='lab'?D.lab.recordatorios:D.vida.recordatorios;
+  list.push({id:Date.now(),text:text.trim(),date:date||'',done:false});
+  await save();
+}
+async function toggleRec(mode,id){
+  const list=mode==='lab'?D.lab.recordatorios:D.vida.recordatorios;
+  const idx=list.findIndex(r=>r.id===id);if(idx>=0)list[idx].done=!list[idx].done;
+  await save();
+}
+async function delRec(mode,id){
+  if(mode==='lab')D.lab.recordatorios=D.lab.recordatorios.filter(r=>r.id!==id);
+  else D.vida.recordatorios=D.vida.recordatorios.filter(r=>r.id!==id);
+  await save();
+}
+
+async function addReunion(){
+  const titulo=document.getElementById('reu-titulo')?.value;
+  const fecha=document.getElementById('reu-fecha')?.value;
+  const hora=document.getElementById('reu-hora')?.value;
+  if(!titulo?.trim())return;
+  D.lab.reuniones=[...(D.lab.reuniones||[]),{id:Date.now(),titulo:titulo.trim(),date:fecha||TODAY,hora:hora||'',notas:'',done:false}];
+  await save();renderLab();
+}
+async function delReunion(id){D.lab.reuniones=D.lab.reuniones.filter(r=>r.id!==id);await save();renderLab();}
+
+async function addLog(area,sector){
+  const act=document.getElementById(`log-act-${area}`)?.value;
+  if(!act)return;
+  const notes=document.getElementById(`log-notes-${area}`)?.value||'';
+  const date=document.getElementById(`log-date-${area}`)?.value||TODAY;
+  D.vida[area].log=[...(D.vida[area].log||[]),{id:Date.now(),act,notes,date}];
+  await save();renderVida();
+}
+async function delLog(area,id){D.vida[area].log=D.vida[area].log.filter(l=>l.id!==id);await save();renderVida();}
+
+async function saveContexto(){const el=document.getElementById('ctx-inp');if(el){D.context=el.value;await save();}}
+async function saveContextoVida(){const el=document.getElementById('ctx-vida-inp');if(el){D.contextVida=el.value;await save();}}
+async function saveNotas(path,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const keys=path.split('.');let obj=D;
+  for(let i=0;i<keys.length-1;i++)obj=obj[keys[i]];
+  obj[keys[keys.length-1]]=el.value;
+  await save();
+}
+
+/* ── FINANCE ── */
 async function saveFinance(type){
-  const lk=type==='cobro'?'cobros':type==='pago'?'pagos':'propuestas';
+  const lk=type==='cobro'?'cobros':type==='pago'?'pagos':type==='propuesta'?'propuestas':'gastos';
   const obj={id:Date.now(),status:type==='propuesta'?'enviada':'pending'};
-  const fields=type==='cobro'?['client','amount','dueDate','notes']:type==='pago'?['vendor','amount','dueDate','notes']:['client','service','amount','sentDate','followUpDate','notes'];
+  const fields=type==='cobro'?['client','amount','dueDate','notes']:type==='pago'?['vendor','amount','dueDate','notes']:type==='propuesta'?['client','service','amount','sentDate','followUpDate','notes']:['category','amount','dueDate','notes'];
   fields.forEach(f=>{const el=document.getElementById('ff-'+type+'-'+f);if(el)obj[f]=el.value;});
   D.finanzas[lk]=[...(D.finanzas[lk]||[]),obj];
   await save();FIN_FORM=null;renderFinanzas();
@@ -402,179 +395,284 @@ async function saveFinance(type){
 async function markPaid(lk,id){D.finanzas[lk]=D.finanzas[lk].map(x=>x.id===id?{...x,status:'paid'}:x);await save();renderFinanzas();}
 async function setPropStatus(id,s){D.finanzas.propuestas=D.finanzas.propuestas.map(p=>p.id===id?{...p,status:s}:p);await save();renderFinanzas();}
 async function delFin(lk,id){D.finanzas[lk]=D.finanzas[lk].filter(x=>x.id!==id);await save();renderFinanzas();}
-
-/* ── Log ───────────────────────────────────────────────────── */
-async function addLog(area){const act=document.getElementById('log-act-'+area)?.value;if(!act)return;const notes=document.getElementById('log-notes-'+area)?.value||'';const date=document.getElementById('log-date-'+area)?.value||TODAY;D.areas[area].log=[...(D.areas[area].log||[]),{id:Date.now(),act,notes,date}];await save();renderAreas();}
-async function delLog(area,id){D.areas[area].log=D.areas[area].log.filter(l=>l.id!==id);await save();renderAreas();}
-
-/* ── Context & Settings ────────────────────────────────────── */
-async function saveContext(){const el=document.getElementById('ctx-inp');if(el){D.context=el.value;await save();}}
 async function saveSettings(){CFG.trelloKey=document.getElementById('s-tk')?.value||'';CFG.trelloToken=document.getElementById('s-tt')?.value||'';localStorage.setItem('gus_cfg',JSON.stringify(CFG));const msg=document.getElementById('s-msg');if(msg){msg.style.display='flex';setTimeout(()=>msg.style.display='none',2000);}if(CFG.trelloKey&&CFG.trelloToken)await loadTrello();}
-async function selectBoard(id){CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));await loadBoard(id);renderAreas();}
 
-/* ══ RENDER ═══════════════════════════════════════════════════ */
-function render(){renderTabs();if(TAB==='hoy')renderHoy();else if(TAB==='areas')renderAreas();else if(TAB==='finanzas')renderFinanzas();else if(TAB==='contexto')renderContexto();else if(TAB==='settings')renderSettings();}
+/* ══ RENDER ══════════════════════════════════════════════════ */
+function render(){
+  renderTabs();
+  if(TAB==='hoy')renderHoy();
+  else if(TAB==='lab')renderLab();
+  else if(TAB==='vida')renderVida();
+  else if(TAB==='finanzas')renderFinanzas();
+  else if(TAB==='contexto')renderContexto();
+  else if(TAB==='settings')renderSettings();
+}
 
 function renderTabs(){
   const a=alerts();
-  const tabs=[
-    {id:'hoy',     label:'Hoy'},
-    {id:'areas',   label:'Áreas'},
-    {id:'finanzas',label:'Finanzas',badge:a.n},
-    {id:'contexto',label:'Contexto'},
-  ];
+  const isLab=MODE==='lab';
+  const tabs=isLab
+    ?[{id:'hoy',label:'Hoy'},{id:'lab',label:'Trabajo'},{id:'finanzas',label:'Finanzas',badge:a.n},{id:'contexto',label:'Contexto'}]
+    :[{id:'hoy',label:'Hoy'},{id:'vida',label:'Mi Vida'},{id:'finanzas',label:'Finanzas',badge:a.n},{id:'contexto',label:'Contexto'}];
   document.getElementById('tabs').innerHTML=tabs.map(t=>`
     <button class="tab ${TAB===t.id?'on':''}" onclick="go('${t.id}')">
       ${t.label}${t.badge?`<span class="dot">${t.badge}</span>`:''}
     </button>`).join('');
 }
 
-/* ── HOY ───────────────────────────────────────────────────── */
+/* ── HOY ── */
 function renderHoy(){
+  const isLab=MODE==='lab';
+  const PHASE=isLab?PHASE_LAB:PHASE_VIDA;
+  const QS=isLab?QS_LAB:QS_VIDA;
+  const ANS=isLab?ANS_LAB:ANS_VIDA;
+  const RESULT=isLab?RESULT_LAB:RESULT_VIDA;
+  const accent=isLab?'var(--blue)':'var(--green)';
   const a=alerts();
-  const tasks=allPending().slice(0,10);
-  const doneAll=Object.values(D.areas).flatMap(v=>v.tasks||[]).filter(t=>t.done).length;
-  const totalAll=Object.values(D.areas).flatMap(v=>v.tasks||[]).length;
 
   let ci='';
   if(PHASE==='idle'){
-    const nc=!D.context?.trim();
-    ci=`${nc?`<div class="ibox warn" style="margin-bottom:14px">Completá tu <strong>Contexto</strong> para que las preguntas sean personalizadas.</div>`:''}
-      <p style="color:var(--ink3);margin-bottom:20px;font-size:13px;line-height:1.7">El asistente lee tu contexto, tareas y finanzas para generar preguntas adaptadas a tu día real.</p>
-      <button class="accent" onclick="startCheckIn()" style="width:100%;padding:12px;font-size:13px;border-radius:10px">Iniciar check-in</button>`;
+    const noCtx=isLab?!D.context?.trim():(!D.contextVida?.trim()&&!D.context?.trim());
+    ci=`${noCtx?`<div class="ibox warn" style="margin-bottom:14px">Completá tu <strong>Contexto</strong> para preguntas personalizadas.</div>`:''}
+      <p style="color:var(--ink3);margin-bottom:20px;font-size:13px;line-height:1.7">GUS va a leer tu contexto ${isLab?'laboral':'personal'} y generar preguntas adaptadas a tu situación real.</p>
+      <button class="cta" onclick="${isLab?'startCheckInLab':'startCheckInVida'}()">Iniciar check-in ${isLab?'laboral':'de vida'}</button>`;
   }else if(PHASE==='loading_q'){
-    ci=`<div style="text-align:center;padding:2rem"><div class="spin" style="font-size:22px;color:var(--ink3)">◌</div><p style="color:var(--ink4);margin-top:12px;font-size:12.5px">Leyendo tu contexto y preparando preguntas...</p></div>`;
+    ci=`<div style="text-align:center;padding:2rem"><span class="spin" style="font-size:22px;color:var(--ink3)">◌</span><p style="color:var(--ink4);margin-top:12px;font-size:12.5px">Preparando preguntas...</p></div>`;
   }else if(PHASE==='answering'){
-    ci=QS.map((q,i)=>`<div style="margin-bottom:16px"><p style="font-weight:500;margin-bottom:7px;font-size:13.5px;line-height:1.5">${i+1}. ${q}</p><textarea rows="2" id="ans-${i}" placeholder="Tu respuesta..." oninput="ANS[${i}]=this.value">${ANS[i]||''}</textarea></div>`).join('')
-      +`<button class="primary" onclick="submitCheckIn()" style="width:100%;padding:11px;border-radius:10px;margin-top:6px;font-size:13px">Generar prioridades</button>`;
+    const submitFn=isLab?'submitCheckInLab':'submitCheckInVida';
+    ci=QS.map((q,i)=>`<div style="margin-bottom:16px"><p style="font-weight:500;margin-bottom:7px;font-size:13.5px">${i+1}. ${q}</p><textarea rows="2" id="ans-${i}" placeholder="Tu respuesta..." oninput="${isLab?'ANS_LAB':'ANS_VIDA'}[${i}]=this.value">${ANS[i]||''}</textarea></div>`).join('')
+      +`<button class="cta" onclick="${submitFn}()" style="margin-top:6px">Generar prioridades</button>`;
   }else if(PHASE==='loading_p'){
-    ci=`<div style="text-align:center;padding:2rem"><div class="spin" style="font-size:22px;color:var(--ink3)">◌</div><p style="color:var(--ink4);margin-top:12px;font-size:12.5px">Analizando tus respuestas...</p></div>`;
+    ci=`<div style="text-align:center;padding:2rem"><span class="spin" style="font-size:22px;color:var(--ink3)">◌</span><p style="color:var(--ink4);margin-top:12px;font-size:12.5px">Analizando tus respuestas...</p></div>`;
   }else if(PHASE==='done'&&RESULT){
-    ci=`<p style="font-size:11px;color:var(--ink4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-weight:500">Prioridades de hoy</p>
-      ${(RESULT.priorities||[]).map((p,i)=>`<div class="prio-item"><span class="prio-num">${i+1}</span><span style="font-size:13.5px;color:var(--ink2);padding-top:2px">${p}</span></div>`).join('')}
+    const prioLabel=isLab?'Prioridades laborales de hoy':'Prioridades personales de hoy';
+    ci=`<p style="font-size:11px;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;font-weight:500">${prioLabel}</p>
+      ${(RESULT.priorities||[]).map((p,i)=>`<div class="prio-item"><span class="prio-num">${i+1}</span><span style="font-size:13.5px;color:var(--ink2);padding-top:3px">${p}</span></div>`).join('')}
       ${RESULT.coaching?`<div class="ibox coach" style="margin-top:16px">💡 ${RESULT.coaching}</div>`:''}
       ${RESULT.lifeReminder&&RESULT.lifeReminder!=='null'?`<div class="ibox life">🤍 ${RESULT.lifeReminder}</div>`:''}
-      <button class="ghost" onclick="PHASE='idle';RESULT=null;renderHoy()" style="margin-top:12px;font-size:12px;color:var(--ink4)">↺ Repetir check-in</button>`;
+      <button class="ghost" onclick="${isLab?'PHASE_LAB':'PHASE_VIDA'}='idle';${isLab?'RESULT_LAB':'RESULT_VIDA'}=null;renderHoy()" style="margin-top:10px;font-size:12px;color:var(--ink4)">↺ Repetir check-in</button>`;
   }
 
-  const alertHtml=(a.oc.length||a.up.length||a.op.length)?`<div class="card card-warn fade">
-    <div class="sh"><div class="sh-l"><div class="sh-icon" style="background:rgba(184,120,0,0.1);color:var(--amber)">!</div>Alertas activas</div></div>
+  const alertHtml=(a.oc.length||a.up.length)?`<div class="card card-warn fade">
+    <div class="sh"><div class="sh-l"><div class="icon" style="background:var(--amber-s);color:var(--amber)">!</div>Alertas financieras</div></div>
     ${a.oc.map(c=>`<div class="row"><div class="sdot" style="background:var(--red)"></div><span style="flex:1;color:var(--red)">Cobro vencido — <strong>${c.client}</strong> $${c.amount}</span><button class="ghost" onclick="go('finanzas')" style="font-size:11.5px">Ver →</button></div>`).join('')}
     ${a.up.map(p=>`<div class="row"><div class="sdot" style="background:var(--amber)"></div><span style="flex:1;color:var(--amber)">Pago próximo — <strong>${p.vendor}</strong> $${p.amount} · ${fmtDate(p.dueDate)}</span></div>`).join('')}
-    ${a.op.map(p=>`<div class="row"><div class="sdot" style="background:var(--blue)"></div><span style="flex:1;color:var(--blue)">Propuesta sin respuesta — <strong>${p.client}</strong></span></div>`).join('')}
   </div>`:'';
 
-  const taskRows=tasks.length===0
-    ?`<div class="empty">Sin tareas pendientes</div>`
-    :tasks.map(t=>`<div class="row"><button class="chk" onclick="toggleTask('${t.area}',${t.id})"></button><span style="flex:1;font-size:13.5px">${t.text}</span><span class="badge">${AC[t.area].label}</span></div>`).join('');
+  const reunHoy=(D.lab.reuniones||[]).filter(r=>r.date===TODAY&&!r.done);
+  const reunHtml=reunHoy.length&&MODE==='lab'?`<div class="card fade" style="border-color:${accent};border-left:3px solid ${accent}">
+    <div class="sh"><div class="sh-l"><div class="icon" style="background:var(--accent-s);color:var(--accent)">📅</div>Reuniones de hoy</div></div>
+    ${reunHoy.map(r=>`<div class="row"><div class="sdot" style="background:var(--accent)"></div><span style="flex:1;font-size:13.5px">${r.titulo}</span>${r.hora?`<span style="font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace">${r.hora}</span>`:''}</div>`).join('')}
+  </div>`:'';
 
   document.getElementById('view-hoy').innerHTML=`
     <div class="card fade">
       <div class="sh">
-        <div class="sh-l"><div class="sh-icon" style="background:var(--blue-soft);color:var(--blue)">✦</div>Check-in diario</div>
-        ${PHASE==='done'?'<span style="font-size:11.5px;color:var(--green);font-weight:500">✓ Completado</span>':''}
+        <div class="sh-l"><div class="icon" style="background:var(--accent-s);color:var(--accent)">✦</div>Check-in ${isLab?'laboral':'de vida'}</div>
+        ${PHASE==='done'?`<span style="font-size:11.5px;color:var(--accent);font-weight:500">✓ Completado</span>`:''}
       </div>
       ${ci}
     </div>
-    ${alertHtml}
-    <div class="card">
-      <div class="sh">
-        <div class="sh-l"><div class="sh-icon" style="background:var(--bone2)">✓</div>Tareas pendientes</div>
-        <span style="color:var(--ink4);font-size:12px;font-family:'DM Mono',monospace">${doneAll}/${totalAll}</span>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:14px">
-        <input id="hoy-inp" type="text" placeholder="Agregar tarea rápida..." onkeydown="if(event.key==='Enter')addHoyTask()" style="flex:1">
-        <button onclick="addHoyTask()" style="padding:9px 13px">+</button>
-      </div>
-      ${taskRows}
-    </div>`;
+    ${alertHtml}${reunHtml}`;
 }
 
-/* ── ÁREAS ─────────────────────────────────────────────────── */
-function renderAreas(){
-  const pills=Object.entries(AC).map(([k,c])=>{
-    const n=(D.areas[k].tasks||[]).filter(t=>!t.done).length;
-    return `<button class="pill ${AREA===k?'on':''}" onclick="goArea('${k}')" style="${AREA===k?`background:${c.color};border-color:${c.color};color:#fff`:''}">
-      ${c.label}${n?` <span style="font-size:10px;background:rgba(0,0,0,0.15);padding:1px 5px;border-radius:10px;margin-left:2px">${n}</span>`:''}
-    </button>`;}).join('');
+/* ── LABORAL ── */
+function renderLab(){
+  const subs=[
+    {id:'tareas',    label:'Tareas'},
+    {id:'proyectos', label:'Proyectos'},
+    {id:'reuniones', label:'Reuniones'},
+    {id:'recordatorios',label:'Recordatorios'},
+    {id:'trello',    label:'Trello'},
+  ];
+  const pills=subs.map(s=>`<button class="pill ${LAB_SUB===s.id?'on':''}" onclick="goLabSub('${s.id}')" style="${LAB_SUB===s.id?'background:var(--blue);border-color:var(--blue);color:#fff':''}">${s.label}</button>`).join('');
 
-  const a=D.areas[AREA], cfg=AC[AREA];
-  const tasks=a.tasks||[];
-  const taskRows=tasks.map(t=>`<div class="row">
-    <button class="chk ${t.done?'done':''}" onclick="toggleTask('${AREA}',${t.id})"></button>
-    <span style="flex:1;font-size:13.5px;${t.done?'text-decoration:line-through;color:var(--ink4)':''}">${t.text}</span>
-    <button class="ghost" onclick="delTask('${AREA}',${t.id})" style="color:var(--ink4);font-size:16px;padding:3px 7px">×</button>
-  </div>`).join('');
+  let content='';
 
-  /* Trello */
-  let trello='';
-  if(AREA==='trabajo'){
+  if(LAB_SUB==='tareas'||LAB_SUB==='proyectos'){
+    const list=LAB_SUB==='tareas'?D.lab.tareas:D.lab.proyectos;
+    const label=LAB_SUB==='tareas'?'tarea':'proyecto';
+    const done=(list||[]).filter(t=>t.done).length;
+    const rows=(list||[]).map(t=>`<div class="row">
+      <button class="chk ${t.done?'done':''}" onclick="toggleItem('${LAB_SUB}',${t.id});renderLab()"></button>
+      <span style="flex:1;font-size:13.5px;${t.done?'text-decoration:line-through;color:var(--ink4)':''}">${t.text}</span>
+      <button class="ghost" onclick="delItem('${LAB_SUB}',${t.id});renderLab()" style="font-size:16px;color:var(--ink4)">×</button>
+    </div>`).join('');
+    content=`<div class="sh" style="margin-bottom:0">
+      <div class="sh-l">${LAB_SUB==='tareas'?'Tareas':'Proyectos'}</div>
+      <span style="font-size:12px;color:var(--ink4);font-family:'DM Mono',monospace">${done}/${(list||[]).length}</span>
+    </div>
+    <div style="display:flex;gap:8px;margin:14px 0">
+      <input id="lab-item-inp" type="text" placeholder="Nueva ${label}..." onkeydown="if(event.key==='Enter'){addItem('${LAB_SUB}',this.value);this.value='';renderLab()}" style="flex:1">
+      <button onclick="addItem('${LAB_SUB}',document.getElementById('lab-item-inp').value);document.getElementById('lab-item-inp').value='';renderLab()" style="padding:9px 13px">+</button>
+    </div>
+    ${(list||[]).length===0?`<div class="empty">Sin ${label}s</div>`:rows}`;
+  }
+
+  else if(LAB_SUB==='reuniones'){
+    const reuns=D.lab.reuniones||[];
+    const today=reuns.filter(r=>r.date===TODAY);
+    const future=reuns.filter(r=>r.date>TODAY);
+    const rows=arr=>arr.map(r=>`<div class="row">
+      <div class="sdot" style="background:var(--blue);margin-top:6px"></div>
+      <div style="flex:1">
+        <p style="font-size:13.5px">${r.titulo}</p>
+        <p style="font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace">${r.date}${r.hora?' · '+r.hora:''}</p>
+      </div>
+      <button class="ghost" onclick="delReunion(${r.id})" style="font-size:16px;color:var(--ink4)">×</button>
+    </div>`).join('');
+    content=`<div class="iform" style="margin-bottom:16px">
+      <p style="font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);margin-bottom:10px">Nueva reunión</p>
+      <input id="reu-titulo" placeholder="Título de la reunión..." style="margin-bottom:8px">
+      <div class="grid2"><input type="date" id="reu-fecha" value="${TODAY}"><input type="time" id="reu-hora"></div>
+      <button onclick="addReunion()" style="margin-top:4px;font-size:12.5px">+ Agregar</button>
+    </div>
+    ${today.length?`<p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500;margin-bottom:8px">Hoy</p>${rows(today)}`:''}
+    ${future.length?`<p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:500;margin:12px 0 8px">Próximas</p>${rows(future)}`:''}
+    ${reuns.length===0?`<div class="empty">Sin reuniones agendadas</div>`:''}
+    <div class="divider"></div>
+    <div class="ibox" style="background:var(--blue-s);border:1px solid var(--blue-b);color:var(--blue);font-size:12.5px;margin-top:4px">
+      📝 <strong>GUS Meet Bot</strong> — próximamente GUS podrá unirse a tus reuniones de Google Meet y traerte un resumen con action items automáticamente.
+    </div>`;
+  }
+
+  else if(LAB_SUB==='recordatorios'){
+    const recs=D.lab.recordatorios||[];
+    const rows=recs.map(r=>`<div class="row">
+      <button class="chk ${r.done?'done':''}" onclick="toggleRec('lab',${r.id});renderLab()"></button>
+      <div style="flex:1">
+        <p style="font-size:13.5px;${r.done?'text-decoration:line-through;color:var(--ink4)':''}">${r.text}</p>
+        ${r.date?`<p style="font-size:11.5px;color:var(--ink3);font-family:'DM Mono',monospace">${fmtDate(r.date)}</p>`:''}
+      </div>
+      <button class="ghost" onclick="delRec('lab',${r.id});renderLab()" style="font-size:16px;color:var(--ink4)">×</button>
+    </div>`).join('');
+    content=`<div style="display:flex;gap:8px;margin-bottom:8px">
+      <input id="rec-lab-inp" type="text" placeholder="Nuevo recordatorio..." style="flex:1" onkeydown="if(event.key==='Enter'){addRec('lab',this.value,document.getElementById('rec-lab-date').value);this.value='';renderLab()}">
+      <input type="date" id="rec-lab-date" style="width:140px">
+      <button onclick="addRec('lab',document.getElementById('rec-lab-inp').value,document.getElementById('rec-lab-date').value);document.getElementById('rec-lab-inp').value='';renderLab()" style="padding:9px 13px">+</button>
+    </div>
+    ${recs.length===0?`<div class="empty">Sin recordatorios</div>`:rows}`;
+  }
+
+  else if(LAB_SUB==='trello'){
     if(!CFG.trelloKey){
-      trello=`<div class="ibox warn" style="margin-bottom:16px">Conectá Trello en <strong>Ajustes</strong> para ver tus tableros aquí.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px;padding:3px 10px">Ir →</button></div>`;
+      content=`<div class="ibox warn">Conectá Trello en <strong>Ajustes</strong> para ver tus tableros.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px">Ir →</button></div>`;
     }else if(TRELLO_LOADING){
-      trello=`<p style="color:var(--ink4);font-size:12.5px;margin-bottom:16px"><span class="spin">◌</span> Conectando con Trello...</p>`;
+      content=`<div style="text-align:center;padding:2rem"><span class="spin" style="color:var(--ink3)">◌</span></div>`;
     }else if(TRELLO_DATA.cards){
       const byList={};
       (TRELLO_DATA.lists||[]).forEach(l=>byList[l.id]={name:l.name,cards:[]});
       (TRELLO_DATA.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{if(byList[c.idList])byList[c.idList].cards.push(c);});
-      const listsHtml=Object.values(byList).filter(l=>l.cards.length).map(l=>`
-        <div style="margin-bottom:12px">
-          <p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:6px;font-weight:500">${l.name}</p>
-          ${l.cards.slice(0,8).map(c=>`<div class="tcard">${c.name}${c.due?`<span class="tcard-due">${fmtDate(c.due)}</span>`:''}</div>`).join('')}
-        </div>`).join('');
-      const activeBoard=TRELLO_BOARDS.find(b=>b.id===CFG.activeBoardId);
-      trello=`<div style="margin-bottom:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500">Trello — ${activeBoard?.name||'Tablero'}</p>
-          <select onchange="selectBoard(this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 10px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}" ${b.id===CFG.activeBoardId?'selected':''}>${b.name}</option>`).join('')}</select>
-        </div>
-        ${listsHtml||'<div class="empty">Sin tarjetas activas</div>'}
-      </div><div class="divider"></div>`;
+      const ab=TRELLO_BOARDS.find(b=>b.id===CFG.activeBoardId);
+      content=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500">📌 ${ab?.name||'Tablero'}</p>
+        <select onchange="selectBoard(this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 8px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}" ${b.id===CFG.activeBoardId?'selected':''}>${b.name}</option>`).join('')}</select>
+      </div>
+      ${Object.values(byList).filter(l=>l.cards.length).map(l=>`
+        <div style="margin-bottom:14px">
+          <p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink4);margin-bottom:6px;font-weight:500">${l.name}</p>
+          ${l.cards.slice(0,10).map(c=>`<div class="tcard">${c.name}${c.due?`<span style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace">${fmtDate(c.due)}</span>`:''}</div>`).join('')}
+        </div>`).join('')||`<div class="empty">Sin tarjetas activas</div>`}`;
+    }else{
+      content=`<div style="text-align:center;padding:2rem;color:var(--ink4);font-size:13px"><span class="spin">◌</span> Conectando...</div>`;
     }
   }
 
-  /* Log */
-  const hasLog=AREA==='hobbies'||AREA==='fitness';
-  const logOpts=AREA==='hobbies'?['Lectura','Música','Cocina','Salida','Series / Pelis','Otro']:['Gimnasio','Cardio','Caminata','Clase','Meal prep','Dieta limpia','Otro'];
-  const logRows=(a.log||[]).slice().reverse().map(l=>`<div class="row">
-    <span style="font-size:13px;color:var(--ink3)">${l.act}</span>
-    <span style="flex:1;font-size:12px;color:var(--ink4);padding-left:10px;font-style:italic">${l.notes||''}</span>
-    <span style="font-size:11.5px;color:var(--ink4);font-family:'DM Mono',monospace">${fmtDate(l.date)}</span>
-    <button class="ghost" onclick="delLog('${AREA}',${l.id})" style="color:var(--ink4);font-size:16px;padding:3px 7px">×</button>
-  </div>`).join('');
-
-  document.getElementById('view-areas').innerHTML=`
-    <div style="margin-bottom:16px">${pills}</div>
+  document.getElementById('view-lab').innerHTML=`
+    <div class="pills">${pills}</div>
     <div class="card fade">
-      <div class="sh">
-        <div class="sh-l">
-          <div class="sh-icon" style="background:${cfg.bg};color:${cfg.color};font-size:16px">${cfg.icon}</div>
-          <span style="color:${cfg.color}">${cfg.label}</span>
-        </div>
-      </div>
-      ${trello}
-      <div style="margin-bottom:16px">
-        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:8px;font-weight:500">Notas del área</p>
-        <textarea id="notes-${AREA}" rows="3" placeholder="Estado general, recordatorios, notas..." onblur="saveNotes('${AREA}')">${a.notes||''}</textarea>
-      </div>
-      <div class="divider"></div>
-      <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:10px;font-weight:500;margin-top:16px">Tareas</p>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <input type="text" id="ti-${AREA}" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTask('${AREA}')" style="flex:1">
-        <button onclick="addTask('${AREA}')" style="padding:9px 13px">+</button>
-      </div>
-      ${tasks.length===0?`<div class="empty" style="padding:16px">Sin tareas</div>`:taskRows}
-      ${hasLog?`
-        <div class="divider" style="margin-top:16px"></div>
-        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:10px;font-weight:500;margin-top:16px">Registro de actividad</p>
-        <div class="grid2"><select id="log-act-${AREA}"><option value="">Seleccioná actividad...</option>${logOpts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select><input type="date" id="log-date-${AREA}" value="${TODAY}"></div>
-        <input type="text" id="log-notes-${AREA}" placeholder="Notas opcionales..." style="margin-bottom:10px">
-        <button onclick="addLog('${AREA}')" style="font-size:12.5px">+ Registrar</button>
-        <div style="margin-top:12px">${(a.log||[]).length===0?`<div class="empty" style="padding:12px">Sin registros</div>`:logRows}</div>`:''}
+      <div class="sh"><div class="sh-l"><div class="icon" style="background:var(--blue-s);color:var(--blue)">◈</div><span style="color:var(--blue)">${subs.find(s=>s.id===LAB_SUB)?.label||''}</span></div></div>
+      ${content}
     </div>`;
 }
 
-/* ── FINANZAS ──────────────────────────────────────────────── */
+/* ── VIDA ── */
+function renderVida(){
+  const subs=[
+    {id:'pareja',    label:'Pareja'},
+    {id:'amigos',    label:'Amigos'},
+    {id:'familia',   label:'Familia'},
+    {id:'recordatorios',label:'Recordatorios'},
+    {id:'hobbies',   label:'Hobbies'},
+    {id:'fitness',   label:'Fitness'},
+  ];
+  const pills=subs.map(s=>`<button class="pill ${VIDA_SUB===s.id?'on':''}" onclick="goVidaSub('${s.id}')" style="${VIDA_SUB===s.id?'background:var(--green);border-color:var(--green);color:#fff':''}">${s.label}</button>`).join('');
+
+  let content='';
+
+  if(['pareja','amigos','familia'].includes(VIDA_SUB)){
+    const data=D.vida[VIDA_SUB];
+    const tasks=data.tasks||[];
+    const done=tasks.filter(t=>t.done).length;
+    const rows=tasks.map(t=>`<div class="row">
+      <button class="chk ${t.done?'done':''}" onclick="toggleVidaTask('${VIDA_SUB}',${t.id});renderVida()"></button>
+      <span style="flex:1;font-size:13.5px;${t.done?'text-decoration:line-through;color:var(--ink4)':''}">${t.text}</span>
+      <button class="ghost" onclick="delVidaTask('${VIDA_SUB}',${t.id});renderVida()" style="font-size:16px;color:var(--ink4)">×</button>
+    </div>`).join('');
+    content=`<div style="margin-bottom:16px">
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);font-weight:500;margin-bottom:8px">Notas y planes</p>
+      <textarea id="vida-notas-${VIDA_SUB}" rows="3" placeholder="Planes, fechas importantes, cosas pendientes..." onblur="saveNotas('vida.${VIDA_SUB}.notas','vida-notas-${VIDA_SUB}')">${data.notas||''}</textarea>
+    </div>
+    <div class="divider"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 10px">
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);font-weight:500">Tareas y pendientes</p>
+      <span style="font-size:12px;color:var(--ink4);font-family:'DM Mono',monospace">${done}/${tasks.length}</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input id="vida-task-${VIDA_SUB}" type="text" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter'){addVidaTask('${VIDA_SUB}',this.value);this.value='';renderVida()}" style="flex:1">
+      <button onclick="addVidaTask('${VIDA_SUB}',document.getElementById('vida-task-${VIDA_SUB}').value);document.getElementById('vida-task-${VIDA_SUB}').value='';renderVida()" style="padding:9px 13px">+</button>
+    </div>
+    ${tasks.length===0?`<div class="empty" style="padding:16px">Sin tareas</div>`:rows}`;
+  }
+
+  else if(VIDA_SUB==='recordatorios'){
+    const recs=D.vida.recordatorios||[];
+    const rows=recs.map(r=>`<div class="row">
+      <button class="chk ${r.done?'done':''}" onclick="toggleRec('vida',${r.id});renderVida()"></button>
+      <div style="flex:1">
+        <p style="font-size:13.5px;${r.done?'text-decoration:line-through;color:var(--ink4)':''}">${r.text}</p>
+        ${r.date?`<p style="font-size:11.5px;color:var(--ink3);font-family:'DM Mono',monospace">${fmtDate(r.date)}</p>`:''}
+      </div>
+      <button class="ghost" onclick="delRec('vida',${r.id});renderVida()" style="font-size:16px;color:var(--ink4)">×</button>
+    </div>`).join('');
+    content=`<div style="display:flex;gap:8px;margin-bottom:8px">
+      <input id="rec-vida-inp" type="text" placeholder="Ej: comprar pañales, llamar al médico..." style="flex:1" onkeydown="if(event.key==='Enter'){addRec('vida',this.value,document.getElementById('rec-vida-date').value);this.value='';renderVida()}">
+      <input type="date" id="rec-vida-date" style="width:140px">
+      <button onclick="addRec('vida',document.getElementById('rec-vida-inp').value,document.getElementById('rec-vida-date').value);document.getElementById('rec-vida-inp').value='';renderVida()" style="padding:9px 13px">+</button>
+    </div>
+    ${recs.length===0?`<div class="empty">Sin recordatorios</div>`:rows}`;
+  }
+
+  else if(VIDA_SUB==='hobbies'||VIDA_SUB==='fitness'){
+    const data=D.vida[VIDA_SUB];
+    const logOpts=VIDA_SUB==='hobbies'?['Lectura','Música','Cocina','Salida / Plan','Series / Pelis','Deporte recreativo','Otro']:['Gimnasio','Cardio','Caminata','Clase grupal','Meal prep','Dieta limpia','Descanso activo','Otro'];
+    const logRows=(data.log||[]).slice().reverse().map(l=>`<div class="row">
+      <span style="font-size:13px;color:var(--ink2);flex:0 0 auto">${l.act}</span>
+      <span style="flex:1;font-size:12px;color:var(--ink4);padding-left:10px;font-style:italic">${l.notes||''}</span>
+      <span style="font-size:11.5px;color:var(--ink4);font-family:'DM Mono',monospace;margin-right:6px">${fmtDate(l.date)}</span>
+      <button class="ghost" onclick="delLog('${VIDA_SUB}',${l.id})" style="font-size:16px;color:var(--ink4)">×</button>
+    </div>`).join('');
+    content=`<div style="margin-bottom:16px">
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);font-weight:500;margin-bottom:8px">Notas</p>
+      <textarea id="vida-notas-${VIDA_SUB}" rows="2" placeholder="Objetivos, rutinas, notas..." onblur="saveNotas('vida.${VIDA_SUB}.notas','vida-notas-${VIDA_SUB}')">${data.notas||''}</textarea>
+    </div>
+    <div class="divider"></div>
+    <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);font-weight:500;margin:14px 0 10px">Registrar actividad</p>
+    <div class="grid2"><select id="log-act-${VIDA_SUB}"><option value="">Actividad...</option>${logOpts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select><input type="date" id="log-date-${VIDA_SUB}" value="${TODAY}"></div>
+    <input type="text" id="log-notes-${VIDA_SUB}" placeholder="Notas opcionales..." style="margin-bottom:10px">
+    <button onclick="addLog('${VIDA_SUB}')" style="font-size:12.5px">+ Registrar</button>
+    <div style="margin-top:14px">${(data.log||[]).length===0?`<div class="empty" style="padding:14px">Sin registros</div>`:logRows}</div>`;
+  }
+
+  document.getElementById('view-vida').innerHTML=`
+    <div class="pills">${pills}</div>
+    <div class="card fade">
+      <div class="sh"><div class="sh-l"><div class="icon" style="background:var(--green-s);color:var(--green)">◉</div><span style="color:var(--green)">${subs.find(s=>s.id===VIDA_SUB)?.label||''}</span></div></div>
+      ${content}
+    </div>`;
+}
+
+/* ── FINANZAS ── */
 function finSection(title,lk,type,items){
   const showForm=FIN_FORM===type;
   const ST={pending:'var(--amber)',paid:'var(--green)',enviada:'var(--blue)',ganada:'var(--green)',perdida:'var(--red)',seguimiento:'var(--amber)'};
@@ -584,82 +682,74 @@ function finSection(title,lk,type,items){
     const isNr=x.status==='pending'&&x.dueDate&&new Date(x.dueDate)<=new Date(Date.now()+7*864e5);
     const lbl=x.client||x.vendor||x.category||'—';
     const parts=[x.service,x.amount?`$${x.amount}`:'',x.dueDate?fmtDate(x.dueDate):'',x.sentDate?`Enviada ${fmtDate(x.sentDate)}`:''].filter(Boolean).join(' · ');
-    const warn=isOD?` <span style="color:var(--red);font-size:11px;font-weight:600">VENCIDO</span>`:isNr?` <span style="color:var(--amber);font-size:11px;font-weight:500">PRÓXIMO</span>`:'';
+    const warn=isOD?` <span style="color:var(--red);font-size:11px;font-weight:600">VENCIDO</span>`:isNr?` <span style="color:var(--amber);font-size:11px">PRÓXIMO</span>`:'';
     const sel=type==='propuesta'
       ?`<select onchange="setPropStatus(${x.id},this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 8px">${['enviada','seguimiento','ganada','perdida'].map(s=>`<option value="${s}" ${x.status===s?'selected':''}>${SL[s]}</option>`).join('')}</select>`
       :`<span style="font-size:11.5px;color:${ST[x.status]||'var(--ink3)'};font-weight:500">${SL[x.status]||x.status}</span>`;
-    return `<div class="row">
-      <div style="flex:1">
-        <p style="font-size:13.5px;color:${isOD?'var(--red)':'var(--ink)'}">${lbl}${warn}</p>
-        <p style="font-size:12px;color:var(--ink4);margin-top:1px;font-family:'DM Mono',monospace">${parts}</p>
-      </div>
-      ${sel}
-      ${x.status==='pending'&&type!=='propuesta'?`<button class="ghost" onclick="markPaid('${lk}',${x.id})" title="Marcar pagado" style="color:var(--green);font-size:16px">✓</button>`:''}
-      <button class="ghost" onclick="delFin('${lk}',${x.id})" style="color:var(--ink4);font-size:16px;padding:3px 7px">×</button>
-    </div>`;}).join('');
-
+    return `<div class="row"><div style="flex:1"><p style="font-size:13.5px;color:${isOD?'var(--red)':'var(--ink)'}">${lbl}${warn}</p><p style="font-size:12px;color:var(--ink4);font-family:'DM Mono',monospace">${parts}</p></div>${sel}${x.status==='pending'&&type!=='propuesta'?`<button class="ghost" onclick="markPaid('${lk}',${x.id})" style="color:var(--green);font-size:16px">✓</button>`:''}<button class="ghost" onclick="delFin('${lk}',${x.id})" style="color:var(--ink4);font-size:16px">×</button></div>`;}).join('');
   const inp=(id,ph,t='text')=>`<input id="ff-${type}-${id}" type="${t}" placeholder="${ph}">`;
   let ff='';
-  if(type==='cobro') ff=`<div class="grid2">${inp('client','Cliente *')}${inp('amount','Monto *','number')}</div><div class="grid2">${inp('dueDate','','date')}<label style="font-size:12px;color:var(--ink3);display:flex;align-items:center">Vencimiento</label></div>${inp('notes','Notas (opcional)')}`;
+  if(type==='cobro') ff=`<div class="grid2">${inp('client','Cliente *')}${inp('amount','Monto *','number')}</div><div class="grid2">${inp('dueDate','','date')}<label style="font-size:12px;color:var(--ink3);display:flex;align-items:center">Vencimiento</label></div>${inp('notes','Notas')}`;
   if(type==='pago')  ff=`<div class="grid2">${inp('vendor','Proveedor *')}${inp('amount','Monto *','number')}</div><div class="grid2">${inp('dueDate','','date')}<label style="font-size:12px;color:var(--ink3);display:flex;align-items:center">Vencimiento</label></div>${inp('notes','Notas')}`;
-  if(type==='propuesta') ff=`<div class="grid2">${inp('client','Cliente *')}${inp('service','Servicio *')}</div><div class="grid2">${inp('amount','Monto (opcional)','number')}${inp('sentDate','','date')}</div><label style="font-size:12px;color:var(--ink3);display:block;margin:8px 0 4px">Follow-up programado</label>${inp('followUpDate','','date')}<div style="margin-top:8px">${inp('notes','Notas')}</div>`;
-
-  return `<div class="card">
-    <div class="sh">
-      <div class="sh-l">${title}</div>
-      <button onclick="FIN_FORM=FIN_FORM==='${type}'?null:'${type}';renderFinanzas()" style="font-size:12.5px">+ Agregar</button>
-    </div>
-    ${showForm?`<div class="iform"><p style="font-weight:500;margin-bottom:12px;font-size:13px;text-transform:capitalize">Nuevo ${type}</p>${ff}<div style="display:flex;gap:8px;margin-top:12px"><button class="primary" onclick="saveFinance('${type}')" style="font-size:12.5px">Guardar</button><button onclick="FIN_FORM=null;renderFinanzas()" style="font-size:12.5px">Cancelar</button></div></div>`:''}
-    ${items.length===0&&!showForm?`<div class="empty">Sin registros</div>`:rows}
-  </div>`;
+  if(type==='propuesta') ff=`<div class="grid2">${inp('client','Cliente *')}${inp('service','Servicio *')}</div><div class="grid2">${inp('amount','Monto','number')}${inp('sentDate','','date')}</div><label style="font-size:12px;color:var(--ink3);display:block;margin:6px 0 4px">Follow-up</label>${inp('followUpDate','','date')}<div style="margin-top:8px">${inp('notes','Notas')}</div>`;
+  if(type==='gasto')  ff=`<div class="grid2">${inp('category','Categoría')}${inp('amount','Monto *','number')}</div>${inp('dueDate','','date')}<div style="margin-top:8px">${inp('notes','Notas')}</div>`;
+  return `<div class="card"><div class="sh"><div class="sh-l">${title}</div><button onclick="FIN_FORM=FIN_FORM==='${type}'?null:'${type}';renderFinanzas()" style="font-size:12.5px">+ Agregar</button></div>${showForm?`<div class="iform"><p style="font-weight:500;margin-bottom:10px;font-size:13px;text-transform:capitalize">Nuevo ${type}</p>${ff}<div style="display:flex;gap:8px;margin-top:12px"><button class="primary" onclick="saveFinance('${type}')" style="font-size:12px">Guardar</button><button onclick="FIN_FORM=null;renderFinanzas()" style="font-size:12px">Cancelar</button></div></div>`:''}${items.length===0&&!showForm?`<div class="empty">Sin registros</div>`:rows}</div>`;
 }
 function renderFinanzas(){
   document.getElementById('view-finanzas').innerHTML=
-    finSection('Cobros','cobros','cobro',D.finanzas.cobros||[])+
+    finSection('Cobros — clientes','cobros','cobro',D.finanzas.cobros||[])+
     finSection('Propuestas','propuestas','propuesta',D.finanzas.propuestas||[])+
-    finSection('Pagos a proveedores','pagos','pago',D.finanzas.pagos||[]);
+    finSection('Pagos — proveedores','pagos','pago',D.finanzas.pagos||[])+
+    finSection('Gastos personales','gastos','gasto',D.finanzas.gastos||[]);
 }
 
-/* ── CONTEXTO ──────────────────────────────────────────────── */
+/* ── CONTEXTO ── */
 function renderContexto(){
-  const refs=Object.entries(D.reflections||{}).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);
+  const refs=Object.entries(D.reflections||{}).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6);
   document.getElementById('view-contexto').innerHTML=`
     <div class="card fade">
-      <div class="sh"><div class="sh-l">Mi contexto de vida</div></div>
-      <p style="color:var(--ink3);margin-bottom:12px;font-size:13px;line-height:1.7">Contame cómo está tu vida hoy — proyectos, familia, qué está bien y qué está trabado. Cuanto más detalle, más precisas son las preguntas y prioridades del check-in.</p>
-      <textarea id="ctx-inp" rows="13" placeholder="Ej: Tengo una agencia de marketing con 3 empleados, un proyecto con inversores chinos en negociación, una productora que recién arranca...&#10;&#10;Mi novia está embarazada de 5 meses, mi hija nace en agosto...&#10;&#10;En el gym voy 3 veces por semana pero últimamente falto mucho...">${D.context||''}</textarea>
-      <button class="primary" onclick="saveContext()" style="margin-top:12px;font-size:12.5px">Guardar contexto</button>
+      <div class="sh"><div class="sh-l"><div class="icon" style="background:var(--blue-s);color:var(--blue)">◈</div>Contexto laboral</div></div>
+      <p style="color:var(--ink3);margin-bottom:12px;font-size:13px;line-height:1.7">Proyectos, equipo, clientes, lo que está trabado, lo que está bien. GUS usa esto para el check-in laboral.</p>
+      <textarea id="ctx-inp" rows="8" placeholder="Ej: Tengo una agencia de marketing con 3 empleados, un proyecto con inversores chinos en negociación, una productora que recién arranca...">${D.context||''}</textarea>
+      <button class="primary" onclick="saveContexto()" style="margin-top:12px;font-size:12px">Guardar</button>
     </div>
-    ${refs.length?`<div class="card">
-      <div class="sh"><div class="sh-l">Historial de reflexiones</div></div>
-      ${refs.map(([date,ref])=>`<div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--bone2)">
-        <p style="font-family:'Cormorant',serif;font-size:17px;font-weight:600;margin-bottom:10px;letter-spacing:-.02em">${new Date(date+'T12:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</p>
-        ${ref.coaching?`<div class="ibox coach" style="margin-bottom:10px;font-size:12.5px">💡 ${ref.coaching}</div>`:''}
-        ${(ref.questions||[]).map((q,i)=>`<div style="margin-bottom:7px"><p style="font-size:12.5px;color:var(--ink2)">${q}</p><p style="font-size:12.5px;color:var(--ink4);padding-left:12px;font-style:italic;margin-top:2px">${ref.answers?.[i]||'—'}</p></div>`).join('')}
-      </div>`).join('')}
+    <div class="card">
+      <div class="sh"><div class="sh-l"><div class="icon" style="background:var(--green-s);color:var(--green)">◉</div>Contexto de vida personal</div></div>
+      <p style="color:var(--ink3);margin-bottom:12px;font-size:13px;line-height:1.7">Pareja, familia, salud, hobbies, lo que te preocupa personalmente. GUS usa esto para el check-in de vida.</p>
+      <textarea id="ctx-vida-inp" rows="8" placeholder="Ej: Mi novia está embarazada de 5 meses, mi hija nace en agosto. En el gym voy 3 veces por semana pero últimamente falto...">${D.contextVida||''}</textarea>
+      <button class="primary" onclick="saveContextoVida()" style="margin-top:12px;font-size:12px">Guardar</button>
+    </div>
+    ${refs.length?`<div class="card"><div class="sh"><div class="sh-l">Historial de reflexiones</div></div>
+      ${refs.map(([key,ref])=>{const isLab=key.endsWith('_lab');const date=key.replace('_lab','').replace('_vida','');return `<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--bone2)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${isLab?'var(--blue-s)':'var(--green-s)'};color:${isLab?'var(--blue)':'var(--green)'};font-weight:500">${isLab?'Laboral':'Vida'}</span>
+          <span style="font-family:'Cormorant',serif;font-size:16px;font-weight:600">${new Date(date+'T12:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</span>
+        </div>
+        ${ref.coaching?`<div class="ibox coach" style="font-size:12.5px;margin-bottom:8px">💡 ${ref.coaching}</div>`:''}
+        ${(ref.questions||[]).map((q,i)=>`<div style="margin-bottom:5px"><p style="font-size:12.5px;color:var(--ink2)">${q}</p><p style="font-size:12.5px;color:var(--ink4);padding-left:12px;font-style:italic">${ref.answers?.[i]||'—'}</p></div>`).join('')}
+      </div>`;}).join('')}
     </div>`:''}`;
 }
 
-/* ── SETTINGS ──────────────────────────────────────────────── */
+/* ── SETTINGS ── */
 function renderSettings(){
   document.getElementById('view-settings').innerHTML=`
     <div class="card fade">
-      <div class="sh"><div class="sh-l">Integración Trello</div></div>
-      <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:14px">Obtené tu API Key y Token en <a href="https://trello.com/app-key" target="_blank" style="color:var(--blue)">trello.com/app-key</a>. Hacé clic en "Token" en esa misma página para generar el token.</p>
-      <div style="margin-bottom:10px"><label style="font-size:11.5px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">API Key</label><input id="s-tk" type="text" placeholder="Pegá tu API Key..." value="${CFG.trelloKey||''}"></div>
-      <div style="margin-bottom:14px"><label style="font-size:11.5px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Token</label><input id="s-tt" type="text" placeholder="Pegá tu Token..." value="${CFG.trelloToken||''}"></div>
+      <div class="sh"><div class="sh-l">Trello</div></div>
+      <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:14px">Obtené tu API Key y Token en <a href="https://trello.com/app-key" target="_blank" style="color:var(--blue)">trello.com/app-key</a></p>
+      <div style="margin-bottom:10px"><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">API Key</label><input id="s-tk" type="text" value="${CFG.trelloKey||''}"></div>
+      <div style="margin-bottom:14px"><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Token</label><input id="s-tt" type="text" value="${CFG.trelloToken||''}"></div>
       <div style="display:flex;align-items:center;gap:12px">
-        <button class="primary" onclick="saveSettings()" style="font-size:12.5px">Conectar Trello</button>
-        <div id="s-msg" style="display:none;align-items:center;gap:6px;font-size:12.5px;color:var(--green);font-weight:500">✓ Guardado</div>
+        <button class="primary" onclick="saveSettings()" style="font-size:12px">Conectar</button>
+        <div id="s-msg" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--green);font-weight:500">✓ Guardado</div>
       </div>
-      ${TRELLO_BOARDS.length?`<div style="margin-top:20px"><div class="divider"></div><p style="font-size:11.5px;color:var(--ink3);margin:16px 0 10px;font-weight:500">Tablero principal de la agencia</p>${TRELLO_BOARDS.map(b=>`<div class="row"><span style="flex:1;font-size:13.5px">${b.name}</span><button onclick="selectBoard('${b.id}')" style="font-size:12px;${CFG.activeBoardId===b.id?'color:var(--green);font-weight:600':''}">${CFG.activeBoardId===b.id?'✓ Activo':'Seleccionar'}</button></div>`).join('')}</div>`:''}
+      ${TRELLO_BOARDS.length?`<div style="margin-top:20px"><div class="divider"></div><p style="font-size:11px;color:var(--ink3);margin:14px 0 10px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Tablero principal</p>${TRELLO_BOARDS.map(b=>`<div class="row"><span style="flex:1">${b.name}</span><button onclick="selectBoard('${b.id}')" style="font-size:12px;${CFG.activeBoardId===b.id?'color:var(--green);font-weight:600':''}">${CFG.activeBoardId===b.id?'✓ Activo':'Seleccionar'}</button></div>`).join('')}</div>`:''}
     </div>
     <div class="card">
       <div class="sh"><div class="sh-l">WhatsApp Bot</div></div>
-      <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:12px">El bot está activo en el servidor. Vas a recibir briefings automáticos a las 7am, 12pm y 7pm.</p>
-      <div style="background:var(--bone);border:1px solid var(--bone3);border-radius:var(--r-lg);padding:14px">
-        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:10px;font-weight:500">Comandos disponibles</p>
-        ${['briefing → Resumen del día','prioridades → Tus top 3','finanzas → Cobros y pagos','trello → Tarjetas activas','ayuda → Lista de comandos'].map(c=>`<p style="font-size:13px;color:var(--ink2);margin-bottom:5px;font-family:'DM Mono',monospace"><span style="color:var(--blue)">${c.split('→')[0]}</span><span style="color:var(--ink4)">→${c.split('→')[1]}</span></p>`).join('')}
+      <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:12px">GUS te manda briefings automáticos a las 7am (laboral), 12pm y 7pm (vida).</p>
+      <div style="background:var(--bone);border:1px solid var(--bone3);border-radius:var(--rl);padding:14px">
+        ${['briefing → Resumen laboral del día','prioridades → Tus top 3 laborales','finanzas → Cobros y pagos','trello → Tarjetas activas','vida → Resumen personal','ayuda → Todos los comandos'].map(c=>`<p style="font-size:13px;margin-bottom:5px;font-family:'DM Mono',monospace"><span style="color:var(--blue)">${c.split('→')[0]}</span><span style="color:var(--ink4)">→${c.split('→')[1]}</span></p>`).join('')}
       </div>
     </div>`;
 }
