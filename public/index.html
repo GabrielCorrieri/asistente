@@ -732,24 +732,105 @@ function renderContexto(){
 }
 
 /* ── SETTINGS ── */
+async function saveSettings(){
+  CFG.trelloKey=document.getElementById('s-tk')?.value||'';
+  CFG.trelloToken=document.getElementById('s-tt')?.value||'';
+  localStorage.setItem('gus_cfg',JSON.stringify(CFG));
+  const msg=document.getElementById('s-msg');if(msg){msg.style.display='flex';setTimeout(()=>msg.style.display='none',2000);}
+  if(CFG.trelloKey&&CFG.trelloToken)await loadTrello();
+  renderSettings();
+}
+function toggleDailyBoard(id){
+  if(!CFG.dailyBoards)CFG.dailyBoards=[];
+  const idx=CFG.dailyBoards.indexOf(id);
+  if(idx>=0)CFG.dailyBoards.splice(idx,1);
+  else CFG.dailyBoards.push(id);
+  localStorage.setItem('gus_cfg',JSON.stringify(CFG));
+  renderSettings();
+}
+async function loadBoardPreview(id){
+  if(!CFG.trelloKey||!CFG.trelloToken)return;
+  const prev=document.getElementById('board-preview');
+  if(prev)prev.innerHTML=`<div style="text-align:center;padding:12px;color:var(--ink4);font-size:12.5px"><span class="spin">◌</span> Cargando...</div>`;
+  const d=await api(`/api/trello/cards?key=${CFG.trelloKey}&token=${CFG.trelloToken}&boardId=${id}`);
+  if(!d||!prev)return;
+  const byList={};
+  (d.lists||[]).forEach(l=>byList[l.id]={name:l.name,cards:[]});
+  (d.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{if(byList[c.idList])byList[c.idList].cards.push(c);});
+  const overdue=(d.cards||[]).filter(c=>!c.dueComplete&&c.due&&new Date(c.due)<new Date());
+  const total=(d.cards||[]).filter(c=>!c.dueComplete).length;
+  prev.innerHTML=`<div style="padding:12px;background:var(--bone);border-radius:var(--r);border:1px solid var(--bone3)">
+    <div style="display:flex;gap:12px;margin-bottom:10px">
+      <span style="font-size:12px;color:var(--ink3)">Activas: <strong style="color:var(--ink)">${total}</strong></span>
+      ${overdue.length?`<span style="font-size:12px;color:var(--red)">Vencidas: <strong>${overdue.length}</strong></span>`:''}
+    </div>
+    ${Object.values(byList).filter(l=>l.cards.length).slice(0,4).map(l=>`
+      <div style="margin-bottom:8px">
+        <p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink4);font-weight:500;margin-bottom:4px">${l.name} (${l.cards.length})</p>
+        ${l.cards.slice(0,4).map(c=>`<div class="tcard">${c.name}${c.due?`<span style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace">${fmtDate(c.due)}</span>`:''}</div>`).join('')}
+      </div>`).join('')}
+  </div>`;
+}
+
 function renderSettings(){
+  const dailyBoards=CFG.dailyBoards||[];
   document.getElementById('view-settings').innerHTML=`
     <div class="card fade">
-      <div class="sh"><div class="sh-l">Trello</div></div>
+      <div class="sh"><div class="sh-l">Conexión Trello</div></div>
       <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:14px">Obtené tu API Key y Token en <a href="https://trello.com/app-key" target="_blank" style="color:var(--blue)">trello.com/app-key</a></p>
-      <div style="margin-bottom:10px"><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">API Key</label><input id="s-tk" type="text" value="${CFG.trelloKey||''}"></div>
-      <div style="margin-bottom:14px"><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Token</label><input id="s-tt" type="text" value="${CFG.trelloToken||''}"></div>
+      <div style="margin-bottom:10px"><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">API Key</label><input id="s-tk" type="text" value="${CFG.trelloKey||''}" placeholder="f93de1e8..."></div>
+      <div style="margin-bottom:14px"><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Token</label><input id="s-tt" type="text" value="${CFG.trelloToken||''}" placeholder="ATTAae3f..."></div>
       <div style="display:flex;align-items:center;gap:12px">
         <button class="primary" onclick="saveSettings()" style="font-size:12px">Conectar</button>
         <div id="s-msg" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--green);font-weight:500">✓ Guardado</div>
       </div>
-      ${TRELLO_BOARDS.length?`<div style="margin-top:20px"><div class="divider"></div><p style="font-size:11px;color:var(--ink3);margin:14px 0 10px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Tablero principal</p>${TRELLO_BOARDS.map(b=>`<div class="row"><span style="flex:1">${b.name}</span><button onclick="selectBoard('${b.id}')" style="font-size:12px;${CFG.activeBoardId===b.id?'color:var(--green);font-weight:600':''}">${CFG.activeBoardId===b.id?'✓ Activo':'Seleccionar'}</button></div>`).join('')}</div>`:''}
     </div>
+
+    ${TRELLO_BOARDS.length?`
+    <div class="card">
+      <div class="sh">
+        <div class="sh-l">Tableros</div>
+        <span style="font-size:12px;color:var(--ink4)">${TRELLO_BOARDS.length} tableros</span>
+      </div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">
+        Marcá como <strong style="color:var(--blue)">Diario</strong> los tableros que GUS debe revisar cada mañana en el check-in y en el briefing de WhatsApp.<br>
+        Los demás los podés consultar a pedido escribiendo <span style="font-family:'DM Mono',monospace;color:var(--blue)">trello [nombre]</span> en WhatsApp.
+      </p>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--blue);font-weight:500;padding:3px 10px;background:var(--blue-s);border-radius:20px;border:1px solid var(--blue-b)">● Diario</span>
+        <span style="font-size:11px;color:var(--ink3);font-weight:500;padding:3px 10px;background:var(--bone);border-radius:20px;border:1px solid var(--bone3)">○ A pedido</span>
+      </div>
+      ${TRELLO_BOARDS.map(b=>{
+        const isDaily=dailyBoards.includes(b.id);
+        return `<div class="row" style="align-items:flex-start">
+          <div style="flex:1">
+            <p style="font-size:13.5px;font-weight:${isDaily?500:400}">${b.name}</p>
+            <p style="font-size:11.5px;color:var(--ink4)">${isDaily?'● Se incluye en el check-in y WhatsApp':'○ Disponible a pedido'}</p>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:2px">
+            <button onclick="toggleDailyBoard('${b.id}')" style="font-size:11.5px;${isDaily?'color:var(--blue);border-color:var(--blue-b);background:var(--blue-s)':''}">${isDaily?'✓ Diario':'+ Diario'}</button>
+            <button onclick="loadBoardPreview('${b.id}')" style="font-size:11.5px">Ver →</button>
+          </div>
+        </div>`;}).join('')}
+      <div id="board-preview" style="margin-top:12px"></div>
+    </div>`:''}
+
     <div class="card">
       <div class="sh"><div class="sh-l">WhatsApp Bot</div></div>
-      <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:12px">GUS te manda briefings automáticos a las 7am (laboral), 12pm y 7pm (vida).</p>
+      <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:12px">GUS te manda briefings automáticos a las 7am, 12pm y 7pm.</p>
       <div style="background:var(--bone);border:1px solid var(--bone3);border-radius:var(--rl);padding:14px">
-        ${['briefing → Resumen laboral del día','prioridades → Tus top 3 laborales','finanzas → Cobros y pagos','trello → Tarjetas activas','vida → Resumen personal','ayuda → Todos los comandos'].map(c=>`<p style="font-size:13px;margin-bottom:5px;font-family:'DM Mono',monospace"><span style="color:var(--blue)">${c.split('→')[0]}</span><span style="color:var(--ink4)">→${c.split('→')[1]}</span></p>`).join('')}
+        ${[
+          ['briefing','Resumen del día con Trello diario'],
+          ['prioridades','Top 3 laboral y vida'],
+          ['finanzas','Cobros, pagos y propuestas'],
+          ['trello','Resumen de tableros diarios'],
+          ['trello agencia','Estado del tablero "agencia"'],
+          ['trello chinos','Estado del tablero "chinos"'],
+          ['ayuda','Todos los comandos'],
+        ].map(([cmd,desc])=>`<div class="row" style="padding:6px 0">
+          <span style="font-family:'DM Mono',monospace;font-size:12.5px;color:var(--blue);min-width:140px">${cmd}</span>
+          <span style="font-size:12.5px;color:var(--ink3)">${desc}</span>
+        </div>`).join('')}
       </div>
     </div>`;
 }

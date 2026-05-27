@@ -42,7 +42,7 @@ app.post('/api/ai', async (req, res) => {
 app.get('/api/trello/boards', async (req, res) => {
   const { key, token } = req.query;
   try {
-    const r = await fetch(`https://api.trello.com/1/members/me/boards?key=${key}&token=${token}&filter=open&fields=name,id,url`);
+    const r = await fetch(`https://api.trello.com/1/members/me/boards?key=${key}&token=${token}&filter=open&fields=name,id,url,desc`);
     res.json(await r.json());
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -50,11 +50,35 @@ app.get('/api/trello/boards', async (req, res) => {
 app.get('/api/trello/cards', async (req, res) => {
   const { key, token, boardId } = req.query;
   try {
-    const r = await fetch(`https://api.trello.com/1/boards/${boardId}/cards?key=${key}&token=${token}&fields=name,idList,due,dueComplete,url,desc`);
-    const cards = await r.json();
-    const listsR = await fetch(`https://api.trello.com/1/boards/${boardId}/lists?key=${key}&token=${token}&fields=name,id`);
-    const lists = await listsR.json();
+    const [cardsR, listsR] = await Promise.all([
+      fetch(`https://api.trello.com/1/boards/${boardId}/cards?key=${key}&token=${token}&fields=name,idList,due,dueComplete,url,desc,labels`),
+      fetch(`https://api.trello.com/1/boards/${boardId}/lists?key=${key}&token=${token}&fields=name,id`)
+    ]);
+    const [cards, lists] = await Promise.all([cardsR.json(), listsR.json()]);
     res.json({ cards, lists });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Multi-board summary (daily boards)
+app.get('/api/trello/daily-summary', async (req, res) => {
+  const { key, token, boardIds } = req.query;
+  if (!key || !token || !boardIds) return res.json({ boards: [] });
+  const ids = boardIds.split(',').filter(Boolean);
+  try {
+    const results = await Promise.all(ids.map(async (bid) => {
+      const [br, cr, lr] = await Promise.all([
+        fetch(`https://api.trello.com/1/boards/${bid}?key=${key}&token=${token}&fields=name,id`),
+        fetch(`https://api.trello.com/1/boards/${bid}/cards?key=${key}&token=${token}&fields=name,idList,due,dueComplete,labels`),
+        fetch(`https://api.trello.com/1/boards/${bid}/lists?key=${key}&token=${token}&fields=name,id`)
+      ]);
+      const [board, cards, lists] = await Promise.all([br.json(), cr.json(), lr.json()]);
+      const today = new Date(); today.setHours(23,59,59,999);
+      const overdue = cards.filter(c => !c.dueComplete && c.due && new Date(c.due) < new Date());
+      const dueToday = cards.filter(c => !c.dueComplete && c.due && new Date(c.due) <= today && new Date(c.due) >= new Date(new Date().setHours(0,0,0,0)));
+      const active = cards.filter(c => !c.dueComplete);
+      return { board, cards, lists, summary: { overdue: overdue.length, dueToday: dueToday.length, active: active.length, overdueCards: overdue, dueTodayCards: dueToday } };
+    }));
+    res.json({ boards: results });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -68,15 +92,23 @@ app.post('/whatsapp', async (req, res) => {
   if (['briefing','buenos dias','buen día','start'].includes(cmd)) {
     reply = await buildBriefing(data, 'morning');
   } else if (cmd === 'prioridades') {
-    reply = (data.priorities||[]).length
-      ? '🎯 *Tus prioridades:*\n' + data.priorities.map((p,i)=>`${i+1}. ${p}`).join('\n')
-      : 'No hay prioridades. Hacé el check-in en la web app.';
+    const pLab = (data.prioritiesLab||[]);
+    const pVida = (data.prioritiesVida||[]);
+    if (!pLab.length && !pVida.length) reply = 'No hay prioridades. Hacé el check-in en GUS.';
+    else {
+      reply = '';
+      if (pLab.length) reply += '🔵 *Laboral:*\n' + pLab.map((p,i)=>`${i+1}. ${p}`).join('\n');
+      if (pVida.length) reply += '\n\n🟢 *Vida:*\n' + pVida.map((p,i)=>`${i+1}. ${p}`).join('\n');
+    }
   } else if (cmd === 'finanzas') {
     reply = buildFinanceSummary(data);
   } else if (cmd === 'trello') {
-    reply = await buildTrelloSummary(data);
+    reply = await buildTrelloDailySummary(data);
+  } else if (cmd.startsWith('trello ')) {
+    const name = cmd.replace('trello ','').trim();
+    reply = await buildTrelloBoardByName(data, name);
   } else if (cmd === 'ayuda' || cmd === 'help') {
-    reply = '🤖 *Hola, soy GUS. Comandos disponibles:*\n\n📋 *briefing* → resumen matutino\n🎯 *prioridades* → tus top 3\n💰 *finanzas* → cobros y pagos\n📌 *trello* → tarjetas activas\n\nO escribime lo que sea y te respondo.';
+    reply = '🤖 *Hola, soy GUS.*\n\n📋 *briefing* → resumen del día\n🎯 *prioridades* → tus top 3 laboral y vida\n💰 *finanzas* → cobros y pagos\n📌 *trello* → resumen de tableros diarios\n📌 *trello [nombre]* → estado de un tablero específico\n\nO escribime lo que sea.';
   } else {
     reply = await chatReply(body, data);
   }
@@ -113,17 +145,51 @@ Terminá con 1 frase de coaching corta y potente.`;
   } catch { return '⚡ No se pudo generar el briefing. Revisá el panel web.'; }
 }
 
-async function buildTrelloSummary(data) {
+async function buildTrelloDailySummary(data) {
   const key   = process.env.TRELLO_API_KEY;
   const token = process.env.TRELLO_TOKEN;
-  const board = process.env.TRELLO_BOARD_ID;
-  if (!key||!token||!board) return '⚠️ Trello no configurado. Agregá las claves en el panel web.';
+  const cfg   = JSON.parse(data.trelloCfg || '{}');
+  const dailyIds = cfg.dailyBoards || [];
+  if (!key || !token) return '⚠️ Trello no configurado en GUS.';
+  if (!dailyIds.length) return '📌 No tenés tableros diarios configurados. Abrí GUS → Ajustes → Trello y marcalos.';
   try {
-    const r = await fetch(`https://api.trello.com/1/boards/${board}/cards?key=${key}&token=${token}&fields=name,due,dueComplete`);
-    const cards = await r.json();
-    const active = cards.filter(c=>!c.dueComplete).slice(0,10);
-    return '📌 *Trello — tarjetas activas:*\n' + active.map(c=>`• ${c.name}${c.due?` (${new Date(c.due).toLocaleDateString('es-AR',{day:'numeric',month:'short'})})`:''}`).join('\n');
+    const idsParam = dailyIds.join(',');
+    const r = await fetch(`http://localhost:${process.env.PORT||3000}/api/trello/daily-summary?key=${key}&token=${token}&boardIds=${idsParam}`);
+    const { boards } = await r.json();
+    let msg = '📌 *Resumen Trello diario*\n\n';
+    boards.forEach(({ board, summary }) => {
+      msg += `*${board.name}*\n`;
+      if (summary.overdueCards.length) msg += `🔴 Vencidas: ${summary.overdueCards.slice(0,3).map(c=>c.name).join(', ')}\n`;
+      if (summary.dueTodayCards.length) msg += `🟡 Hoy: ${summary.dueTodayCards.slice(0,3).map(c=>c.name).join(', ')}\n`;
+      msg += `Total activas: ${summary.active}\n\n`;
+    });
+    return msg.trim();
   } catch { return '⚠️ Error leyendo Trello.'; }
+}
+
+async function buildTrelloBoardByName(data, name) {
+  const key   = process.env.TRELLO_API_KEY;
+  const token = process.env.TRELLO_TOKEN;
+  if (!key || !token) return '⚠️ Trello no configurado.';
+  try {
+    const r = await fetch(`https://api.trello.com/1/members/me/boards?key=${key}&token=${token}&filter=open&fields=name,id`);
+    const boards = await r.json();
+    const board = boards.find(b => b.name.toLowerCase().includes(name.toLowerCase()));
+    if (!board) return `⚠️ No encontré un tablero que contenga "${name}". Tableros disponibles: ${boards.map(b=>b.name).join(', ')}`;
+    const cr = await fetch(`https://api.trello.com/1/boards/${board.id}/cards?key=${key}&token=${token}&fields=name,idList,due,dueComplete`);
+    const lr = await fetch(`https://api.trello.com/1/boards/${board.id}/lists?key=${key}&token=${token}&fields=name,id`);
+    const [cards, lists] = await Promise.all([cr.json(), lr.json()]);
+    const byList = {};
+    lists.forEach(l => byList[l.id] = { name: l.name, cards: [] });
+    cards.filter(c => !c.dueComplete).forEach(c => { if(byList[c.idList]) byList[c.idList].cards.push(c); });
+    let msg = `📌 *${board.name}*\n\n`;
+    Object.values(byList).filter(l=>l.cards.length).forEach(l => {
+      msg += `*${l.name}* (${l.cards.length})\n`;
+      l.cards.slice(0,5).forEach(c => { msg += `  • ${c.name}${c.due?` · ${new Date(c.due).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}`:''}\n`; });
+      msg += '\n';
+    });
+    return msg.trim() || `✅ ${board.name} sin tarjetas activas.`;
+  } catch { return '⚠️ Error leyendo el tablero.'; }
 }
 
 async function chatReply(msg, data) {
