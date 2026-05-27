@@ -76,7 +76,7 @@ app.post('/whatsapp', async (req, res) => {
   } else if (cmd === 'trello') {
     reply = await buildTrelloSummary(data);
   } else if (cmd === 'ayuda' || cmd === 'help') {
-    reply = '🤖 *Comandos disponibles:*\n\n📋 *briefing* → resumen matutino\n🎯 *prioridades* → tus top 3\n💰 *finanzas* → cobros y pagos\n📌 *trello* → tarjetas activas\n\nO escribime lo que sea y te respondo.';
+    reply = '🤖 *Hola, soy GUS. Comandos disponibles:*\n\n📋 *briefing* → resumen matutino\n🎯 *prioridades* → tus top 3\n💰 *finanzas* → cobros y pagos\n📌 *trello* → tarjetas activas\n\nO escribime lo que sea y te respondo.';
   } else {
     reply = await chatReply(body, data);
   }
@@ -92,7 +92,7 @@ async function buildBriefing(data, period) {
   const up = (data.finanzas?.pagos||[]).filter(p=>p.status==='pending'&&p.dueDate&&new Date(p.dueDate)<=new Date(Date.now()+7*864e5));
   const allTasks = Object.entries(data.areas||{}).flatMap(([a,v])=>(v.tasks||[]).filter(t=>!t.done).map(t=>({...t,area:a})));
 
-  const prompt = `Sos el asistente personal de un emprendedor argentino. Generá un briefing ${period==='morning'?'matutino':'del día'} para WhatsApp. Máximo 250 palabras. Usá emojis y formato *negrita* de WhatsApp.
+  const prompt = `Sos GUS, el asistente personal de un emprendedor argentino. Generá un briefing ${period==='morning'?'matutino':'del día'} para WhatsApp. Máximo 250 palabras. Usá emojis y formato *negrita* de WhatsApp.
 
 CONTEXTO DEL USUARIO:
 ${data.context||'Sin contexto cargado aún.'}
@@ -127,7 +127,7 @@ async function buildTrelloSummary(data) {
 }
 
 async function chatReply(msg, data) {
-  const prompt = `Sos el asistente personal de un emprendedor argentino. Respondé de forma concisa (máx 150 palabras) para WhatsApp. Usá el contexto disponible.
+  const prompt = `Sos GUS, el asistente personal de un emprendedor argentino. Respondé de forma concisa (máx 150 palabras) para WhatsApp. Usá el contexto disponible.
 Contexto: ${(data.context||'').slice(0,600)}
 Mensaje: ${msg}`;
   try {
@@ -169,14 +169,14 @@ cron.schedule('0 10 * * *', async () => {
   const d = loadData();
   const msg = await buildBriefing(d, 'morning');
   await sendWhatsApp(msg);
-  console.log('[CRON] Briefing matutino enviado');
+  console.log('[GUS] Briefing matutino enviado');
 });
 
 // 12:00 PM ART (15:00 UTC)
 cron.schedule('0 15 * * 1-5', async () => {
   const d = loadData();
   await sendWhatsApp(`⏰ *Check-in mediodía*\n\n${buildFinanceSummary(d)}`);
-  console.log('[CRON] Check-in mediodía enviado');
+  console.log('[GUS] Check-in mediodía enviado');
 });
 
 // 7:00 PM ART (22:00 UTC)
@@ -184,7 +184,7 @@ cron.schedule('0 22 * * 1-5', async () => {
   const d   = loadData();
   const msg = await buildBriefing(d, 'evening');
   await sendWhatsApp('🌆 *Cierre del día*\n\n' + msg);
-  console.log('[CRON] Cierre del día enviado');
+  console.log('[GUS] Cierre del día enviado');
 });
 
-app.listen(PORT, () => console.log(`✅ Asistente corriendo en http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ GUS corriendo en http://localhost:${PORT}`));

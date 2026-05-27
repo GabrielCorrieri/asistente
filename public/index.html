@@ -3,83 +3,255 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Asistente de Vida</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
+<title>GUS — Tu asistente personal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+
 :root{
-  --bg:#0f0f0f;--bg2:#171717;--bg3:#1f1f1f;--bg4:#2a2a2a;
-  --border:#2e2e2e;--border2:#3a3a3a;
-  --text:#e8e0d0;--text2:#9a9080;--text3:#5a5248;
-  --amber:#c9963e;--amber2:#e8b455;
-  --blue:#4a90d9;--green:#5bba84;--red:#e06060;--purple:#9b7fd4;--teal:#5bc8c8;--coral:#e08060;
-  --radius:8px;--radius-lg:12px;
+  --bone:#F4F2ED;
+  --bone2:#ECEAE4;
+  --bone3:#E0DDD6;
+  --ink:#0A0A0B;
+  --ink2:#3A3A3C;
+  --ink3:#8A8A8E;
+  --ink4:#BDBDBE;
+  --blue:#0040FF;
+  --blue-soft:rgba(0,64,255,0.08);
+  --blue-border:rgba(0,64,255,0.2);
+  --red:#CC2200;
+  --red-soft:rgba(204,34,0,0.07);
+  --amber:#B87800;
+  --amber-soft:rgba(184,120,0,0.08);
+  --green:#006633;
+  --green-soft:rgba(0,102,51,0.07);
+  --r:6px;--r-lg:12px;--r-xl:18px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.04);
+  --shadow-lg:0 2px 8px rgba(0,0,0,0.08),0 16px 48px rgba(0,0,0,0.08);
 }
-body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace,system-ui;font-size:13px;min-height:100vh}
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Playfair+Display:wght@500;700&display=swap');
-h1{font-family:'Playfair Display',serif;font-weight:700}
-input,textarea,select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:13px;padding:8px 12px;width:100%;transition:border .15s;outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--amber)}
-textarea{resize:vertical;line-height:1.6}
-button{background:transparent;border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);cursor:pointer;font-family:inherit;font-size:12px;padding:7px 14px;transition:all .15s;white-space:nowrap}
-button:hover{border-color:var(--border2);color:var(--text);background:var(--bg3)}
-button.primary{background:var(--amber);border-color:var(--amber);color:#0f0f0f;font-weight:600}
-button.primary:hover{background:var(--amber2);border-color:var(--amber2)}
-button.ghost{border-color:transparent;padding:4px 8px}
-button.ghost:hover{background:var(--bg3)}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px}
-.card.warn{border-color:#6b4400}
-.card.danger{border-color:#6b2020}
-.card.info{border-color:#1a3a5c}
-.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-.sh-l{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text)}
-.row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+
+body{
+  background:var(--bone);
+  color:var(--ink);
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:14px;
+  font-weight:400;
+  line-height:1.5;
+  min-height:100vh;
+}
+
+/* ── Typography ─────────────────────────── */
+.serif{font-family:'Cormorant',Georgia,serif}
+.mono{font-family:'DM Mono',monospace}
+h1,h2{font-family:'Cormorant',Georgia,serif;font-weight:600;letter-spacing:-.02em}
+
+/* ── Inputs ─────────────────────────────── */
+input,textarea,select{
+  background:#fff;
+  border:1px solid var(--bone3);
+  border-radius:var(--r);
+  color:var(--ink);
+  font-family:'DM Sans',sans-serif;
+  font-size:13.5px;
+  padding:9px 13px;
+  width:100%;
+  transition:border-color .15s,box-shadow .15s;
+  outline:none;
+  -webkit-appearance:none;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px var(--blue-soft);
+}
+textarea{resize:vertical;line-height:1.65}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%238A8A8E' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer}
+
+/* ── Buttons ────────────────────────────── */
+button{
+  background:#fff;
+  border:1px solid var(--bone3);
+  border-radius:var(--r);
+  color:var(--ink2);
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  font-weight:500;
+  padding:8px 16px;
+  transition:all .15s;
+  white-space:nowrap;
+  letter-spacing:-.01em;
+}
+button:hover{border-color:var(--ink4);color:var(--ink);box-shadow:var(--shadow)}
+button.primary{
+  background:var(--ink);
+  border-color:var(--ink);
+  color:var(--bone);
+  letter-spacing:.02em;
+  font-size:12.5px;
+  text-transform:uppercase;
+}
+button.primary:hover{background:var(--ink2);border-color:var(--ink2);box-shadow:var(--shadow)}
+button.ghost{background:transparent;border-color:transparent;padding:5px 8px;color:var(--ink3)}
+button.ghost:hover{background:var(--bone2);border-color:transparent;color:var(--ink);box-shadow:none}
+button.accent{background:var(--blue);border-color:var(--blue);color:#fff;letter-spacing:.02em;font-size:12.5px;text-transform:uppercase}
+button.accent:hover{background:#0035D9;border-color:#0035D9}
+
+/* ── Cards ──────────────────────────────── */
+.card{
+  background:#fff;
+  border:1px solid var(--bone3);
+  border-radius:var(--r-xl);
+  padding:24px;
+  margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+.card-warn{border-color:rgba(184,120,0,0.3);background:linear-gradient(135deg,#fff,#FDFBF6)}
+.card-danger{border-color:rgba(204,34,0,0.2);background:linear-gradient(135deg,#fff,#FDF8F7)}
+
+/* ── Section header ─────────────────────── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bone2)}
+.sh-l{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--ink);font-size:13.5px;letter-spacing:-.01em}
+.sh-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+
+/* ── Rows ───────────────────────────────── */
+.row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bone2)}
 .row:last-child{border-bottom:none}
-.badge{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg3);border:1px solid var(--border2)}
-.tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;background:var(--bg2);padding:4px;border-radius:var(--radius-lg);border:1px solid var(--border)}
-.tab{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius);font-size:12px;font-weight:400;color:var(--text2);border:1px solid transparent;transition:all .15s;position:relative;flex:1;justify-content:center}
-.tab.on{background:var(--bg3);border-color:var(--border2);color:var(--text);font-weight:500}
-.tab .dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700}
-.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.pill{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);color:var(--text2);transition:all .15s;background:var(--bg2)}
-.pill.on{border-color:var(--amber);color:var(--amber);background:rgba(201,150,62,.08)}
-.info-box{padding:10px 14px;border-radius:var(--radius);margin-bottom:12px;font-size:12px;line-height:1.6}
-.info-box.warn{background:rgba(107,68,0,.2);border:1px solid rgba(201,150,62,.3);color:var(--amber2)}
-.info-box.success{background:rgba(91,186,132,.1);border:1px solid rgba(91,186,132,.3);color:var(--green)}
-.info-box.coach{background:rgba(74,144,217,.1);border:1px solid rgba(74,144,217,.3);color:var(--blue)}
-.info-box.life{background:rgba(107,44,0,.15);border:1px solid rgba(224,128,96,.3);color:var(--coral)}
-.empty{text-align:center;padding:24px;color:var(--text3);font-size:12px}
-.spin{animation:spin .9s linear infinite;display:inline-block}
+
+/* ── Tabs ───────────────────────────────── */
+.tab-bar{
+  display:flex;
+  gap:2px;
+  margin-bottom:20px;
+  background:var(--bone2);
+  padding:3px;
+  border-radius:var(--r-lg);
+  border:1px solid var(--bone3);
+}
+.tab{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 16px;flex:1;
+  border-radius:10px;
+  font-size:12.5px;font-weight:500;letter-spacing:.01em;
+  color:var(--ink3);
+  border:1px solid transparent;background:transparent;
+  transition:all .2s;position:relative;
+}
+.tab.on{
+  background:#fff;
+  border-color:var(--bone3);
+  color:var(--ink);
+  box-shadow:0 1px 4px rgba(0,0,0,0.07);
+}
+.tab .dot{
+  position:absolute;top:-4px;right:-4px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--bone);
+}
+
+/* ── Pills ──────────────────────────────── */
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pill{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:30px;
+  font-size:12.5px;font-weight:500;
+  cursor:pointer;
+  border:1px solid var(--bone3);
+  background:#fff;color:var(--ink3);
+  transition:all .15s;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
+}
+.pill.on{border-color:var(--ink);background:var(--ink);color:var(--bone)}
+
+/* ── Info boxes ─────────────────────────── */
+.ibox{padding:12px 16px;border-radius:var(--r-lg);margin-bottom:10px;font-size:13px;line-height:1.65}
+.ibox.coach{background:var(--blue-soft);border:1px solid var(--blue-border);color:var(--blue)}
+.ibox.warn{background:var(--amber-soft);border:1px solid rgba(184,120,0,0.25);color:var(--amber)}
+.ibox.life{background:var(--red-soft);border:1px solid rgba(204,34,0,0.2);color:var(--red)}
+.ibox.success{background:var(--green-soft);border:1px solid rgba(0,102,51,0.2);color:var(--green)}
+
+/* ── Task check ─────────────────────────── */
+.chk{
+  width:18px;height:18px;border-radius:5px;
+  border:1.5px solid var(--bone3);
+  background:#fff;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.chk.done{background:var(--ink);border-color:var(--ink)}
+.chk.done::after{content:'✓';font-size:10px;color:#fff;font-weight:700}
+
+/* ── Misc ───────────────────────────────── */
+.badge{font-size:10.5px;padding:2px 8px;border-radius:20px;background:var(--bone2);border:1px solid var(--bone3);color:var(--ink3);font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+.empty{text-align:center;padding:28px 16px;color:var(--ink4);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.spin{animation:spin .8s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.fade{animation:fadeUp .2s ease both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-#app{max-width:920px;margin:0 auto;padding:16px}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-.header h1{font-size:22px;letter-spacing:-.5px}
-.trello-card{background:rgba(74,144,217,.06);border:1px solid rgba(74,144,217,.2);border-radius:var(--radius);padding:8px 12px;margin-bottom:8px;font-size:12px}
-.trello-card .list-name{color:var(--text2);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
-.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.task-check{width:17px;height:17px;border-radius:4px;border:1px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.task-check.done{background:var(--green);border-color:var(--green)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-select option{background:var(--bg3)}
+.fade{animation:fadeUp .25s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Layout ─────────────────────────────── */
+#wrap{max-width:780px;margin:0 auto;padding:32px 20px 60px}
+
+/* ── Header ─────────────────────────────── */
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+.hdr-logo{display:flex;align-items:baseline;gap:10px}
+.hdr-name{font-family:'Cormorant',serif;font-size:28px;font-weight:700;letter-spacing:-.04em;color:var(--ink)}
+.hdr-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);margin-bottom:4px;flex-shrink:0}
+.hdr-greeting{font-size:12px;color:var(--ink3);margin-top:3px;letter-spacing:.02em;text-transform:uppercase;font-weight:500}
+.hdr-save{font-size:12px;color:var(--green);display:none;align-items:center;gap:5px;font-weight:500}
+
+/* ── Trello cards ───────────────────────── */
+.tcard{
+  background:var(--bone);border:1px solid var(--bone3);
+  border-radius:var(--r);padding:8px 12px;margin-bottom:6px;
+  font-size:12.5px;color:var(--ink2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.tcard-due{font-size:11px;color:var(--amber);font-weight:500;font-family:'DM Mono',monospace}
+
+/* ── Priority numbers ───────────────────── */
+.prio-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--bone2);align-items:flex-start}
+.prio-num{font-family:'Cormorant',serif;font-size:22px;font-weight:600;color:var(--bone3);min-width:24px;line-height:1}
+
+/* ── Status dot ─────────────────────────── */
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+
+/* ── Form inline ────────────────────────── */
+.iform{background:var(--bone);border:1px solid var(--bone3);border-radius:var(--r-lg);padding:16px;margin-bottom:12px}
+
+/* ── Divider ────────────────────────────── */
+.divider{height:1px;background:var(--bone2);margin:16px 0}
 </style>
 </head>
 <body>
-<div id="app">
-  <div class="header">
+<div id="wrap">
+
+  <!-- HEADER -->
+  <div class="hdr">
     <div>
-      <h1 id="greeting">Asistente de vida</h1>
-      <div id="date-str" style="font-size:11px;color:var(--text3);margin-top:3px"></div>
+      <div class="hdr-logo">
+        <span class="hdr-name">GUS</span>
+        <div class="hdr-dot"></div>
+      </div>
+      <div class="hdr-greeting" id="hdr-greeting"></div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <div id="save-indicator" style="font-size:11px;color:var(--green);display:none">
-        <i class="ti ti-check" style="font-size:12px"></i> Guardado
+      <div class="hdr-save" id="save-ind">
+        <span style="font-size:14px">·</span> Guardado
       </div>
-      <button onclick="go('settings')" class="ghost"><i class="ti ti-settings" style="font-size:15px"></i></button>
+      <button class="ghost" onclick="go('settings')" style="font-size:18px;padding:6px 9px" title="Ajustes">⚙</button>
     </div>
   </div>
-  <div class="tabs" id="main-tabs"></div>
+
+  <!-- TABS -->
+  <div class="tab-bar" id="tabs"></div>
+
+  <!-- VIEWS -->
   <div id="view-hoy"></div>
   <div id="view-areas" style="display:none"></div>
   <div id="view-finanzas" style="display:none"></div>
@@ -88,126 +260,109 @@ select option{background:var(--bg3)}
 </div>
 
 <script>
-const TODAY = new Date().toISOString().split('T')[0];
-const DOW   = new Date().getDay();
+const TODAY=new Date().toISOString().split('T')[0], DOW=new Date().getDay();
 
-// ── State ─────────────────────────────────────────────────────────
-let D = { context:'', areas:{trabajo:{tasks:[],notes:''},casa:{tasks:[],notes:''},sociales:{tasks:[],notes:''},estudio:{tasks:[],notes:''},hobbies:{log:[],notes:''},fitness:{log:[],notes:''}}, finanzas:{cobros:[],pagos:[],propuestas:[]}, priorities:[], reflections:{} };
-let TAB='hoy', AREA='trabajo', PHASE='idle', QS=[], ANS={}, RESULT=null, FIN_FORM=null;
-let TRELLO_BOARDS=[], TRELLO_DATA={}, TRELLO_LOADING=false;
-let SETTINGS = { trelloKey:'', trelloToken:'', activeBoardId:'' };
+/* ── State ─────────────────────────────────────────────────── */
+let D={context:'',areas:{trabajo:{tasks:[],notes:''},casa:{tasks:[],notes:''},sociales:{tasks:[],notes:''},estudio:{tasks:[],notes:''},hobbies:{log:[],notes:''},fitness:{log:[],notes:''}},finanzas:{cobros:[],pagos:[],propuestas:[]},priorities:[],reflections:{}};
+let TAB='hoy',AREA='trabajo',PHASE='idle',QS=[],ANS={},RESULT=null,FIN_FORM=null;
+let TRELLO_BOARDS=[],TRELLO_DATA={},TRELLO_LOADING=false;
+let CFG={trelloKey:'',trelloToken:'',activeBoardId:''};
 
-// ── Init ──────────────────────────────────────────────────────────
+/* ── Init ──────────────────────────────────────────────────── */
 (async()=>{
-  document.getElementById('date-str').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  updateGreeting();
-  const [data, settings] = await Promise.all([apiFetch('/api/data'), null]);
-  if(data) D = deepMerge(D, data);
-  SETTINGS = JSON.parse(localStorage.getItem('vida_settings')||'{}');
-  if(!SETTINGS.trelloKey) SETTINGS={trelloKey:'',trelloToken:'',activeBoardId:''};
-  if(D.lastCheckIn===TODAY){ PHASE='done'; const ref=D.reflections[TODAY]; if(ref){QS=ref.questions||[];ANS=ref.answers||{};RESULT={priorities:D.priorities,coaching:ref.coaching,lifeReminder:ref.lifeReminder};} }
-  if(SETTINGS.trelloKey && SETTINGS.trelloToken) loadTrello();
+  const h=new Date().getHours();
+  const g=h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
+  const d=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('hdr-greeting').textContent=`${g} — ${d}`;
+  try{const r=await fetch('/api/data');if(r.ok){const j=await r.json();D=deepMerge(D,j);}}catch{}
+  CFG=JSON.parse(localStorage.getItem('gus_cfg')||'{"trelloKey":"","trelloToken":"","activeBoardId":""}');
+  if(D.lastCheckIn===TODAY){PHASE='done';const ref=D.reflections[TODAY];if(ref){QS=ref.questions||[];ANS=ref.answers||{};RESULT={priorities:D.priorities,coaching:ref.coaching,lifeReminder:ref.lifeReminder};}}
+  if(CFG.trelloKey&&CFG.trelloToken)loadTrello();
   render();
 })();
 
-function updateGreeting(){
-  const h=new Date().getHours();
-  const g=h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
-  document.getElementById('greeting').textContent=g;
-}
+/* ── API ───────────────────────────────────────────────────── */
+async function api(url,opts={}){try{const r=await fetch(url,opts);return r.ok?r.json():null;}catch{return null;}}
+async function aiCall(prompt){const r=await api('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});return r?.text||'';}
+async function save(silent=false){await api('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D)});if(!silent){const el=document.getElementById('save-ind');if(el){el.style.display='flex';setTimeout(()=>el.style.display='none',1800);}}}
 
-// ── API ───────────────────────────────────────────────────────────
-async function apiFetch(url,opts={}){
-  try{ const r=await fetch(url,opts); return await r.json(); }catch(e){ console.error(e); return null; }
-}
-async function aiCall(prompt){
-  const r=await apiFetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
-  return r?.text||'';
-}
-
-async function save(silent=false){
-  await apiFetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D)});
-  if(!silent){ const el=document.getElementById('save-indicator'); if(el){el.style.display='flex';setTimeout(()=>el.style.display='none',1500);} }
-}
-
-// ── Trello ────────────────────────────────────────────────────────
+/* ── Trello ────────────────────────────────────────────────── */
 async function loadTrello(){
-  if(!SETTINGS.trelloKey||!SETTINGS.trelloToken) return;
+  if(!CFG.trelloKey||!CFG.trelloToken)return;
   TRELLO_LOADING=true;
-  const boards = await apiFetch(`/api/trello/boards?key=${SETTINGS.trelloKey}&token=${SETTINGS.trelloToken}`);
-  if(boards&&!boards.error){ TRELLO_BOARDS=boards; }
-  if(SETTINGS.activeBoardId){ await loadTrelloBoard(SETTINGS.activeBoardId); }
+  const b=await api(`/api/trello/boards?key=${CFG.trelloKey}&token=${CFG.trelloToken}`);
+  if(b&&!b.error)TRELLO_BOARDS=b;
+  if(CFG.activeBoardId)await loadBoard(CFG.activeBoardId);
   TRELLO_LOADING=false;
-  if(TAB==='areas'&&AREA==='trabajo') renderAreas();
+  if(TAB==='areas'&&AREA==='trabajo')renderAreas();
 }
-async function loadTrelloBoard(boardId){
-  const data=await apiFetch(`/api/trello/cards?key=${SETTINGS.trelloKey}&token=${SETTINGS.trelloToken}&boardId=${boardId}`);
-  if(data&&!data.error){ TRELLO_DATA=data; SETTINGS.activeBoardId=boardId; localStorage.setItem('vida_settings',JSON.stringify(SETTINGS)); }
+async function loadBoard(id){
+  const d=await api(`/api/trello/cards?key=${CFG.trelloKey}&token=${CFG.trelloToken}&boardId=${id}`);
+  if(d&&!d.error){TRELLO_DATA=d;CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));}
 }
 
-// ── Navigation ────────────────────────────────────────────────────
-function go(t){ TAB=t; FIN_FORM=null; ['hoy','areas','finanzas','contexto','settings'].forEach(v=>{ const el=document.getElementById('view-'+v); if(el)el.style.display=v===t?'block':'none'; }); render(); }
-function goArea(a){ AREA=a; render(); }
+/* ── Nav ───────────────────────────────────────────────────── */
+function go(t){TAB=t;FIN_FORM=null;['hoy','areas','finanzas','contexto','settings'].forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.style.display=v===t?'block':'none';});render();}
+function goArea(a){AREA=a;render();}
 
-// ── Helpers ───────────────────────────────────────────────────────
-const AREA_CFG={
-  trabajo: {icon:'ti-briefcase',label:'Trabajo',  color:'var(--blue)'},
-  casa:    {icon:'ti-home',     label:'Casa',     color:'var(--green)'},
-  sociales:{icon:'ti-users',    label:'Sociales', color:'var(--amber)'},
-  estudio: {icon:'ti-book',     label:'Estudio',  color:'var(--purple)'},
-  hobbies: {icon:'ti-music',    label:'Hobbies',  color:'var(--teal)'},
-  fitness: {icon:'ti-run',      label:'Fitness',  color:'var(--coral)'},
+/* ── Helpers ───────────────────────────────────────────────── */
+const AC={
+  trabajo:{label:'Trabajo',  color:'#0040FF',bg:'rgba(0,64,255,0.07)',   icon:'◈'},
+  casa:   {label:'Casa',     color:'#006633',bg:'rgba(0,102,51,0.07)',    icon:'◉'},
+  sociales:{label:'Sociales',color:'#B87800',bg:'rgba(184,120,0,0.08)',   icon:'◎'},
+  estudio:{label:'Estudio',  color:'#6600CC',bg:'rgba(102,0,204,0.07)',   icon:'◐'},
+  hobbies:{label:'Hobbies',  color:'#007A99',bg:'rgba(0,122,153,0.07)',   icon:'◑'},
+  fitness:{label:'Fitness',  color:'#CC2200',bg:'rgba(204,34,0,0.07)',    icon:'◒'},
 };
-function allPendingTasks(){ return Object.entries(D.areas).flatMap(([a,v])=>(v.tasks||[]).filter(t=>!t.done).map(t=>({...t,area:a}))); }
-function alerts(){ const oc=(D.finanzas?.cobros||[]).filter(c=>c.status==='pending'&&c.dueDate&&new Date(c.dueDate)<new Date()); const up=(D.finanzas?.pagos||[]).filter(p=>p.status==='pending'&&p.dueDate&&new Date(p.dueDate)<=new Date(Date.now()+7*864e5)); const op=(D.finanzas?.propuestas||[]).filter(p=>p.status==='enviada'); return{oc,up,op,n:oc.length+up.length}; }
-function fmtDate(d){ if(!d)return''; try{return new Date(d+'T12:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});}catch{return d;} }
-function deepMerge(a,b){ const r={...a}; for(const k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))r[k]=deepMerge(a[k]||{},b[k]); else if(b[k]!==undefined)r[k]=b[k]; } return r; }
+function allPending(){return Object.entries(D.areas).flatMap(([a,v])=>(v.tasks||[]).filter(t=>!t.done).map(t=>({...t,area:a})));}
+function alerts(){
+  const oc=(D.finanzas?.cobros||[]).filter(c=>c.status==='pending'&&c.dueDate&&new Date(c.dueDate)<new Date());
+  const up=(D.finanzas?.pagos||[]).filter(p=>p.status==='pending'&&p.dueDate&&new Date(p.dueDate)<=new Date(Date.now()+7*864e5));
+  const op=(D.finanzas?.propuestas||[]).filter(p=>p.status==='enviada');
+  return{oc,up,op,n:oc.length+up.length};
+}
+function fmtDate(d){if(!d)return'';try{return new Date(d+'T12:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});}catch{return d;}}
+function deepMerge(a,b){const r={...a};for(const k in b){if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))r[k]=deepMerge(a[k]||{},b[k]);else if(b[k]!==undefined)r[k]=b[k];}return r;}
 
-// ── AI Check-in ───────────────────────────────────────────────────
+/* ── AI Check-in ───────────────────────────────────────────── */
 async function startCheckIn(){
-  if(!D.context?.trim()){ go('contexto'); return; }
-  PHASE='loading_q'; QS=[]; ANS={}; RESULT=null; renderHoy();
+  if(!D.context?.trim()){go('contexto');return;}
+  PHASE='loading_q';QS=[];ANS={};RESULT=null;renderHoy();
   const a=alerts();
-  const dayCtx=DOW===1?'lunes (inicio de semana)':DOW===5?'viernes (cierre de semana)':DOW===0?'domingo':'día laboral';
-  const pendingStr=Object.entries(D.areas).map(([k,v])=>`${AREA_CFG[k].label}: ${(v.tasks||[]).filter(t=>!t.done).length} tareas`).join(', ');
-  const trelloStr=TRELLO_DATA.cards?`Tarjetas Trello activas: ${TRELLO_DATA.cards.filter(c=>!c.dueComplete).length}`:'Sin datos de Trello';
-
-  const prompt=`Sos el asistente de vida y coach personal de este usuario. Tenés acceso a su contexto de vida completo.
+  const day=DOW===1?'lunes (inicio de semana)':DOW===5?'viernes (cierre de semana)':DOW===0?'domingo':'día laboral';
+  const pending=Object.entries(D.areas).map(([k,v])=>`${AC[k].label}: ${(v.tasks||[]).filter(t=>!t.done).length} tareas`).join(', ');
+  const prompt=`Sos el asistente de vida y coach personal de este usuario.
 
 CONTEXTO DE VIDA:
 ${D.context}
 
-ESTADO ACTUAL:
-- Día: ${dayCtx}
-- Pendientes: ${pendingStr}
+ESTADO:
+- Día: ${day}
+- Pendientes: ${pending}
 - Cobros vencidos: ${a.oc.length}
 - Propuestas sin respuesta: ${a.op.length}
-- Pagos próximos: ${a.up.length}
-- ${trelloStr}
 
-Generá preguntas de check-in diario MUY específicas usando el contexto (mencioná proyectos reales, situaciones concretas).
+Generá preguntas de check-in MUY específicas usando el contexto real (mencioná proyectos, personas, situaciones concretas).
+- 4 preguntas normalmente, 5 si hay mucho por resolver
 - Cubrí al menos 2 áreas de vida distintas
-- Si es lunes: planificación semanal; si hay cobros vencidos: preguntá específicamente
-- 4 preguntas normalmente, 5 si hay mucho contexto
+- Si es lunes: foco en planificación semanal
 - Directas, segunda persona (vos)
 
 SOLO JSON: {"questions":["p1","p2","p3","p4"]}`;
-
   const txt=await aiCall(prompt);
-  try{ QS=JSON.parse(txt.replace(/\`\`\`json|\`\`\`/g,'').trim()).questions||fallbackQ(); }catch{ QS=fallbackQ(); }
-  PHASE='answering'; renderHoy();
+  try{QS=JSON.parse(txt.replace(/```json|```/g,'').trim()).questions||fallbackQ();}catch{QS=fallbackQ();}
+  PHASE='answering';renderHoy();
 }
-
-function fallbackQ(){ return ["¿Qué es lo más importante que tenés que resolver hoy?","¿Hay algo que venís postergando que te pesa?","¿Cómo está tu energía y tu vida personal?","¿Qué vas a hacer hoy que no sea trabajo?"]; }
+function fallbackQ(){return["¿Qué es lo más importante que tenés que resolver hoy?","¿Hay algo que venís postergando que te pesa?","¿Cómo está tu energía y tu vida personal?","¿Qué va a hacer que hoy sea un buen día?"];}
 
 async function submitCheckIn(){
   if(!Object.values(ANS).some(v=>v?.trim()))return;
-  PHASE='loading_p'; renderHoy();
+  PHASE='loading_p';renderHoy();
   const a=alerts();
   const qa=QS.map((q,i)=>`P: ${q}\nR: ${ANS[i]||'(sin respuesta)'}`).join('\n\n');
   const prompt=`Sos el coach ejecutivo y de vida de este usuario.
 
-CONTEXTO DE VIDA:
+CONTEXTO:
 ${D.context}
 
 CHECK-IN:
@@ -215,247 +370,296 @@ ${qa}
 
 ALERTAS: cobros vencidos: ${a.oc.map(c=>`${c.client} $${c.amount}`).join(',')||'ninguno'} | propuestas: ${a.op.map(p=>p.client).join(',')||'ninguna'}
 
-Generá (específico, mencionando proyectos/situaciones reales):
-1. TOP 3 prioridades concretas y accionables
-2. Coaching insight de 2 líneas — potente y personalizado
-3. Recordatorio de vida personal si detectás algo descuidado — o "null"
+Generá (específico, mencionando situaciones reales del contexto):
+1. TOP 3 prioridades concretas y accionables para hoy
+2. Insight de coaching de 2 líneas — potente, personalizado
+3. Recordatorio de vida personal si detectás algo descuidado — o exactamente "null"
 
 SOLO JSON: {"priorities":["p1","p2","p3"],"coaching":"texto","lifeReminder":"texto o null"}`;
-
   const txt=await aiCall(prompt);
-  try{ RESULT=JSON.parse(txt.replace(/\`\`\`json|\`\`\`/g,'').trim()); }
-  catch{ RESULT={priorities:["Revisar emails urgentes","Avanzar tarea principal de trabajo","Tiempo personal garantizado"],coaching:"Lo urgente siempre va a existir. La pregunta es si lo importante también tiene espacio.",lifeReminder:"null"}; }
+  try{RESULT=JSON.parse(txt.replace(/```json|```/g,'').trim());}
+  catch{RESULT={priorities:["Revisar emails urgentes","Avanzar tarea principal del día","Proteger tiempo personal"],coaching:"Lo que no agendás, no existe. Tu energía es finita — usala con intención.",lifeReminder:"null"};}
   D={...D,priorities:RESULT.priorities||[],lastCheckIn:TODAY,reflections:{...D.reflections,[TODAY]:{questions:QS,answers:ANS,coaching:RESULT.coaching,lifeReminder:RESULT.lifeReminder}}};
-  await save(true); PHASE='done'; renderHoy();
+  await save(true);PHASE='done';renderHoy();
 }
 
-// ── Tasks ─────────────────────────────────────────────────────────
-async function addTask(area){ const el=document.getElementById('ti-'+area); if(!el||!el.value.trim())return; D.areas[area].tasks=[...(D.areas[area].tasks||[]),{id:Date.now(),text:el.value.trim(),done:false,date:TODAY}]; await save(); el.value=''; TAB==='hoy'?renderHoy():renderAreas(); }
-async function toggleTask(area,id){ D.areas[area].tasks=D.areas[area].tasks.map(t=>t.id===id?{...t,done:!t.done}:t); await save(); TAB==='hoy'?renderHoy():renderAreas(); }
-async function delTask(area,id){ D.areas[area].tasks=D.areas[area].tasks.filter(t=>t.id!==id); await save(); TAB==='hoy'?renderHoy():renderAreas(); }
-async function saveNotes(area){ const el=document.getElementById('notes-'+area); if(el){D.areas[area].notes=el.value; await save();} }
+/* ── Tasks ─────────────────────────────────────────────────── */
+async function addTask(area){const el=document.getElementById('ti-'+area);if(!el||!el.value.trim())return;D.areas[area].tasks=[...(D.areas[area].tasks||[]),{id:Date.now(),text:el.value.trim(),done:false,date:TODAY}];await save();el.value='';TAB==='hoy'?renderHoy():renderAreas();}
+async function toggleTask(area,id){D.areas[area].tasks=D.areas[area].tasks.map(t=>t.id===id?{...t,done:!t.done}:t);await save();TAB==='hoy'?renderHoy():renderAreas();}
+async function delTask(area,id){D.areas[area].tasks=D.areas[area].tasks.filter(t=>t.id!==id);await save();TAB==='hoy'?renderHoy():renderAreas();}
+async function saveNotes(area){const el=document.getElementById('notes-'+area);if(el){D.areas[area].notes=el.value;await save();}}
+async function addHoyTask(){const el=document.getElementById('hoy-inp');if(!el||!el.value.trim())return;D.areas.trabajo.tasks=[...(D.areas.trabajo.tasks||[]),{id:Date.now(),text:el.value.trim(),done:false,date:TODAY}];await save();el.value='';renderHoy();}
 
-// ── Finance ───────────────────────────────────────────────────────
+/* ── Finance ───────────────────────────────────────────────── */
 async function saveFinance(type){
   const lk=type==='cobro'?'cobros':type==='pago'?'pagos':'propuestas';
-  const obj={id:Date.now()};
+  const obj={id:Date.now(),status:type==='propuesta'?'enviada':'pending'};
   const fields=type==='cobro'?['client','amount','dueDate','notes']:type==='pago'?['vendor','amount','dueDate','notes']:['client','service','amount','sentDate','followUpDate','notes'];
   fields.forEach(f=>{const el=document.getElementById('ff-'+type+'-'+f);if(el)obj[f]=el.value;});
-  obj.status=type==='propuesta'?'enviada':'pending';
   D.finanzas[lk]=[...(D.finanzas[lk]||[]),obj];
-  await save(); FIN_FORM=null; renderFinanzas();
+  await save();FIN_FORM=null;renderFinanzas();
 }
-async function markPaid(lk,id){ D.finanzas[lk]=D.finanzas[lk].map(x=>x.id===id?{...x,status:'paid'}:x); await save(); renderFinanzas(); }
-async function setPropStatus(id,s){ D.finanzas.propuestas=D.finanzas.propuestas.map(p=>p.id===id?{...p,status:s}:p); await save(); renderFinanzas(); }
-async function delFin(lk,id){ D.finanzas[lk]=D.finanzas[lk].filter(x=>x.id!==id); await save(); renderFinanzas(); }
+async function markPaid(lk,id){D.finanzas[lk]=D.finanzas[lk].map(x=>x.id===id?{...x,status:'paid'}:x);await save();renderFinanzas();}
+async function setPropStatus(id,s){D.finanzas.propuestas=D.finanzas.propuestas.map(p=>p.id===id?{...p,status:s}:p);await save();renderFinanzas();}
+async function delFin(lk,id){D.finanzas[lk]=D.finanzas[lk].filter(x=>x.id!==id);await save();renderFinanzas();}
 
-// ── Log ───────────────────────────────────────────────────────────
-async function addLog(area){ const act=document.getElementById('log-act-'+area)?.value; if(!act)return; const notes=document.getElementById('log-notes-'+area)?.value||''; const date=document.getElementById('log-date-'+area)?.value||TODAY; D.areas[area].log=[...(D.areas[area].log||[]),{id:Date.now(),act,notes,date}]; await save(); renderAreas(); }
-async function delLog(area,id){ D.areas[area].log=D.areas[area].log.filter(l=>l.id!==id); await save(); renderAreas(); }
+/* ── Log ───────────────────────────────────────────────────── */
+async function addLog(area){const act=document.getElementById('log-act-'+area)?.value;if(!act)return;const notes=document.getElementById('log-notes-'+area)?.value||'';const date=document.getElementById('log-date-'+area)?.value||TODAY;D.areas[area].log=[...(D.areas[area].log||[]),{id:Date.now(),act,notes,date}];await save();renderAreas();}
+async function delLog(area,id){D.areas[area].log=D.areas[area].log.filter(l=>l.id!==id);await save();renderAreas();}
 
-// ── Context ───────────────────────────────────────────────────────
-async function saveContext(){ const el=document.getElementById('ctx-inp'); if(el){D.context=el.value; await save();} }
+/* ── Context & Settings ────────────────────────────────────── */
+async function saveContext(){const el=document.getElementById('ctx-inp');if(el){D.context=el.value;await save();}}
+async function saveSettings(){CFG.trelloKey=document.getElementById('s-tk')?.value||'';CFG.trelloToken=document.getElementById('s-tt')?.value||'';localStorage.setItem('gus_cfg',JSON.stringify(CFG));const msg=document.getElementById('s-msg');if(msg){msg.style.display='flex';setTimeout(()=>msg.style.display='none',2000);}if(CFG.trelloKey&&CFG.trelloToken)await loadTrello();}
+async function selectBoard(id){CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));await loadBoard(id);renderAreas();}
 
-// ── Settings ──────────────────────────────────────────────────────
-async function saveSettings(){
-  SETTINGS.trelloKey  =document.getElementById('s-trello-key')?.value||'';
-  SETTINGS.trelloToken=document.getElementById('s-trello-token')?.value||'';
-  localStorage.setItem('vida_settings',JSON.stringify(SETTINGS));
-  const msg=document.getElementById('s-msg'); if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',2000);}
-  if(SETTINGS.trelloKey&&SETTINGS.trelloToken) await loadTrello();
-}
-async function selectBoard(id){ SETTINGS.activeBoardId=id; localStorage.setItem('vida_settings',JSON.stringify(SETTINGS)); await loadTrelloBoard(id); renderAreas(); }
-
-// ── RENDER ────────────────────────────────────────────────────────
-function render(){ renderTabs(); if(TAB==='hoy')renderHoy(); else if(TAB==='areas')renderAreas(); else if(TAB==='finanzas')renderFinanzas(); else if(TAB==='contexto')renderContexto(); else if(TAB==='settings')renderSettings(); }
+/* ══ RENDER ═══════════════════════════════════════════════════ */
+function render(){renderTabs();if(TAB==='hoy')renderHoy();else if(TAB==='areas')renderAreas();else if(TAB==='finanzas')renderFinanzas();else if(TAB==='contexto')renderContexto();else if(TAB==='settings')renderSettings();}
 
 function renderTabs(){
   const a=alerts();
-  const tabs=[{id:'hoy',icon:'ti-sun',label:'Hoy'},{id:'areas',icon:'ti-layout-grid',label:'Áreas'},{id:'finanzas',icon:'ti-coin',label:'Finanzas',badge:a.n},{id:'contexto',icon:'ti-user',label:'Contexto'}];
-  document.getElementById('main-tabs').innerHTML=tabs.map(t=>`<button class="tab ${TAB===t.id?'on':''}" onclick="go('${t.id}')"><i class="ti ${t.icon}" style="font-size:14px"></i>${t.label}${t.badge?`<span class="dot">${t.badge}</span>`:''}</button>`).join('');
+  const tabs=[
+    {id:'hoy',     label:'Hoy'},
+    {id:'areas',   label:'Áreas'},
+    {id:'finanzas',label:'Finanzas',badge:a.n},
+    {id:'contexto',label:'Contexto'},
+  ];
+  document.getElementById('tabs').innerHTML=tabs.map(t=>`
+    <button class="tab ${TAB===t.id?'on':''}" onclick="go('${t.id}')">
+      ${t.label}${t.badge?`<span class="dot">${t.badge}</span>`:''}
+    </button>`).join('');
 }
 
+/* ── HOY ───────────────────────────────────────────────────── */
 function renderHoy(){
-  const a=alerts(); const tasks=allPendingTasks().slice(0,10);
-  const done=Object.values(D.areas).flatMap(v=>v.tasks||[]).filter(t=>t.done).length;
-  const total=Object.values(D.areas).flatMap(v=>v.tasks||[]).length;
+  const a=alerts();
+  const tasks=allPending().slice(0,10);
+  const doneAll=Object.values(D.areas).flatMap(v=>v.tasks||[]).filter(t=>t.done).length;
+  const totalAll=Object.values(D.areas).flatMap(v=>v.tasks||[]).length;
 
   let ci='';
   if(PHASE==='idle'){
     const nc=!D.context?.trim();
-    ci=`<div style="text-align:center;padding:1.5rem 0">
-      ${nc?`<div class="info-box warn" style="text-align:left;margin-bottom:12px"><i class="ti ti-info-circle" style="margin-right:6px"></i>Primero completá tu <strong>contexto de vida</strong> (tab Contexto) para preguntas personalizadas.</div>`:''}
-      <div style="color:var(--text2);margin-bottom:16px;line-height:1.7;font-size:12px">El asistente lee tu contexto completo, tareas pendientes y finanzas para generar preguntas adaptadas a tu día real.</div>
-      <button class="primary" onclick="startCheckIn()"><i class="ti ti-sparkles" style="margin-right:8px"></i>Iniciar check-in</button>
-    </div>`;
+    ci=`${nc?`<div class="ibox warn" style="margin-bottom:14px">Completá tu <strong>Contexto</strong> para que las preguntas sean personalizadas.</div>`:''}
+      <p style="color:var(--ink3);margin-bottom:20px;font-size:13px;line-height:1.7">El asistente lee tu contexto, tareas y finanzas para generar preguntas adaptadas a tu día real.</p>
+      <button class="accent" onclick="startCheckIn()" style="width:100%;padding:12px;font-size:13px;border-radius:10px">Iniciar check-in</button>`;
   }else if(PHASE==='loading_q'){
-    ci=`<div style="text-align:center;padding:1.5rem"><i class="ti ti-loader spin" style="font-size:24px;color:var(--text2)"></i><div style="color:var(--text3);margin-top:10px;font-size:12px">Leyendo tu contexto y preparando preguntas...</div></div>`;
+    ci=`<div style="text-align:center;padding:2rem"><div class="spin" style="font-size:22px;color:var(--ink3)">◌</div><p style="color:var(--ink4);margin-top:12px;font-size:12.5px">Leyendo tu contexto y preparando preguntas...</p></div>`;
   }else if(PHASE==='answering'){
-    ci=QS.map((q,i)=>`<div style="margin-bottom:14px"><div style="font-weight:500;margin-bottom:6px">${i+1}. ${q}</div><textarea rows="2" id="ans-${i}" placeholder="Tu respuesta..." oninput="ANS[${i}]=this.value">${ANS[i]||''}</textarea></div>`).join('')
-      +`<button class="primary" onclick="submitCheckIn()" style="margin-top:8px"><i class="ti ti-brain" style="margin-right:8px"></i>Generar prioridades</button>`;
+    ci=QS.map((q,i)=>`<div style="margin-bottom:16px"><p style="font-weight:500;margin-bottom:7px;font-size:13.5px;line-height:1.5">${i+1}. ${q}</p><textarea rows="2" id="ans-${i}" placeholder="Tu respuesta..." oninput="ANS[${i}]=this.value">${ANS[i]||''}</textarea></div>`).join('')
+      +`<button class="primary" onclick="submitCheckIn()" style="width:100%;padding:11px;border-radius:10px;margin-top:6px;font-size:13px">Generar prioridades</button>`;
   }else if(PHASE==='loading_p'){
-    ci=`<div style="text-align:center;padding:1.5rem"><i class="ti ti-loader spin" style="font-size:24px;color:var(--text2)"></i><div style="color:var(--text3);margin-top:10px;font-size:12px">Analizando tus respuestas...</div></div>`;
+    ci=`<div style="text-align:center;padding:2rem"><div class="spin" style="font-size:22px;color:var(--ink3)">◌</div><p style="color:var(--ink4);margin-top:12px;font-size:12.5px">Analizando tus respuestas...</p></div>`;
   }else if(PHASE==='done'&&RESULT){
-    ci=`<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tus 3 prioridades de hoy</div>
-      ${(RESULT.priorities||[]).map((p,i)=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:16px;margin-top:1px">${i+1}</span><span>${p}</span></div>`).join('')}
-      ${RESULT.coaching?`<div class="info-box coach" style="margin-top:12px"><i class="ti ti-bulb" style="margin-right:6px"></i>${RESULT.coaching}</div>`:''}
-      ${RESULT.lifeReminder&&RESULT.lifeReminder!=='null'?`<div class="info-box life"><i class="ti ti-heart" style="margin-right:6px"></i>${RESULT.lifeReminder}</div>`:''}
-      <button onclick="PHASE='idle';RESULT=null;renderHoy()" style="margin-top:10px;font-size:11px"><i class="ti ti-refresh" style="margin-right:5px"></i>Repetir check-in</button>`;
+    ci=`<p style="font-size:11px;color:var(--ink4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-weight:500">Prioridades de hoy</p>
+      ${(RESULT.priorities||[]).map((p,i)=>`<div class="prio-item"><span class="prio-num">${i+1}</span><span style="font-size:13.5px;color:var(--ink2);padding-top:2px">${p}</span></div>`).join('')}
+      ${RESULT.coaching?`<div class="ibox coach" style="margin-top:16px">💡 ${RESULT.coaching}</div>`:''}
+      ${RESULT.lifeReminder&&RESULT.lifeReminder!=='null'?`<div class="ibox life">🤍 ${RESULT.lifeReminder}</div>`:''}
+      <button class="ghost" onclick="PHASE='idle';RESULT=null;renderHoy()" style="margin-top:12px;font-size:12px;color:var(--ink4)">↺ Repetir check-in</button>`;
   }
 
-  const alertHtml=(a.oc.length||a.up.length||a.op.length)?`<div class="card warn fade">
-    <div class="sh"><div class="sh-l" style="color:#e8b455"><i class="ti ti-bell" style="font-size:15px"></i>Alertas activas</div></div>
-    ${a.oc.map(c=>`<div class="row"><div class="status-dot" style="background:var(--red)"></div><span style="flex:1;color:var(--red)">Cobro vencido: <strong>${c.client}</strong> $${c.amount}</span><button class="ghost" onclick="go('finanzas')" style="font-size:11px">Ver ↗</button></div>`).join('')}
-    ${a.up.map(p=>`<div class="row"><div class="status-dot" style="background:var(--amber)"></div><span style="flex:1;color:var(--amber2)">Pago próximo: <strong>${p.vendor}</strong> $${p.amount} · ${fmtDate(p.dueDate)}</span></div>`).join('')}
-    ${a.op.map(p=>`<div class="row"><div class="status-dot" style="background:var(--blue)"></div><span style="flex:1;color:var(--blue)">Propuesta sin respuesta: <strong>${p.client}</strong></span></div>`).join('')}
+  const alertHtml=(a.oc.length||a.up.length||a.op.length)?`<div class="card card-warn fade">
+    <div class="sh"><div class="sh-l"><div class="sh-icon" style="background:rgba(184,120,0,0.1);color:var(--amber)">!</div>Alertas activas</div></div>
+    ${a.oc.map(c=>`<div class="row"><div class="sdot" style="background:var(--red)"></div><span style="flex:1;color:var(--red)">Cobro vencido — <strong>${c.client}</strong> $${c.amount}</span><button class="ghost" onclick="go('finanzas')" style="font-size:11.5px">Ver →</button></div>`).join('')}
+    ${a.up.map(p=>`<div class="row"><div class="sdot" style="background:var(--amber)"></div><span style="flex:1;color:var(--amber)">Pago próximo — <strong>${p.vendor}</strong> $${p.amount} · ${fmtDate(p.dueDate)}</span></div>`).join('')}
+    ${a.op.map(p=>`<div class="row"><div class="sdot" style="background:var(--blue)"></div><span style="flex:1;color:var(--blue)">Propuesta sin respuesta — <strong>${p.client}</strong></span></div>`).join('')}
   </div>`:'';
 
-  const taskRows=tasks.length===0?`<div class="empty">Sin tareas pendientes</div>`:tasks.map(t=>`<div class="row">
-    <button class="task-check" onclick="toggleTask('${t.area}',${t.id})"></button>
-    <span style="flex:1">${t.text}</span>
-    <span class="badge" style="color:${AREA_CFG[t.area].color}">${AREA_CFG[t.area].label}</span>
-  </div>`).join('');
+  const taskRows=tasks.length===0
+    ?`<div class="empty">Sin tareas pendientes</div>`
+    :tasks.map(t=>`<div class="row"><button class="chk" onclick="toggleTask('${t.area}',${t.id})"></button><span style="flex:1;font-size:13.5px">${t.text}</span><span class="badge">${AC[t.area].label}</span></div>`).join('');
 
   document.getElementById('view-hoy').innerHTML=`
-    <div class="card fade"><div class="sh"><div class="sh-l"><i class="ti ti-clipboard-check" style="font-size:15px;color:var(--amber)"></i>Check-in diario</div>${PHASE==='done'?'<span style="font-size:11px;color:var(--green)"><i class="ti ti-check"></i> Completado</span>':''}</div>${ci}</div>
+    <div class="card fade">
+      <div class="sh">
+        <div class="sh-l"><div class="sh-icon" style="background:var(--blue-soft);color:var(--blue)">✦</div>Check-in diario</div>
+        ${PHASE==='done'?'<span style="font-size:11.5px;color:var(--green);font-weight:500">✓ Completado</span>':''}
+      </div>
+      ${ci}
+    </div>
     ${alertHtml}
-    <div class="card"><div class="sh"><div class="sh-l"><i class="ti ti-checklist" style="font-size:15px"></i>Pendientes de hoy</div><span style="color:var(--text3);font-size:11px">${done}/${total}</span></div>
-      <div style="display:flex;gap:8px;margin-bottom:12px"><input id="ti-trabajo" type="text" placeholder="Agregar tarea rápida..." onkeydown="if(event.key==='Enter')addTask('trabajo')" style="flex:1"><button onclick="addTask('trabajo')"><i class="ti ti-plus"></i></button></div>
+    <div class="card">
+      <div class="sh">
+        <div class="sh-l"><div class="sh-icon" style="background:var(--bone2)">✓</div>Tareas pendientes</div>
+        <span style="color:var(--ink4);font-size:12px;font-family:'DM Mono',monospace">${doneAll}/${totalAll}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input id="hoy-inp" type="text" placeholder="Agregar tarea rápida..." onkeydown="if(event.key==='Enter')addHoyTask()" style="flex:1">
+        <button onclick="addHoyTask()" style="padding:9px 13px">+</button>
+      </div>
       ${taskRows}
     </div>`;
 }
 
+/* ── ÁREAS ─────────────────────────────────────────────────── */
 function renderAreas(){
-  const areaPills=Object.entries(AREA_CFG).map(([k,c])=>{
+  const pills=Object.entries(AC).map(([k,c])=>{
     const n=(D.areas[k].tasks||[]).filter(t=>!t.done).length;
-    return `<button class="pill ${AREA===k?'on':''}" onclick="goArea('${k}')" style="${AREA===k?`color:${c.color};border-color:${c.color}`:''}">${c.label}${n?` <span style="background:var(--bg3);padding:1px 5px;border-radius:10px;font-size:10px">${n}</span>`:''}</button>`;
-  }).join('');
+    return `<button class="pill ${AREA===k?'on':''}" onclick="goArea('${k}')" style="${AREA===k?`background:${c.color};border-color:${c.color};color:#fff`:''}">
+      ${c.label}${n?` <span style="font-size:10px;background:rgba(0,0,0,0.15);padding:1px 5px;border-radius:10px;margin-left:2px">${n}</span>`:''}
+    </button>`;}).join('');
 
-  const a=D.areas[AREA]; const cfg=AREA_CFG[AREA];
-  const tasks=(a.tasks||[]);
-  const taskRows=tasks.map(t=>`<div class="row"><button class="task-check ${t.done?'done':''}" onclick="toggleTask('${AREA}',${t.id})">${t.done?'<i class="ti ti-check" style="font-size:10px;color:#fff"></i>':''}</button><span style="flex:1;${t.done?'text-decoration:line-through;color:var(--text3)':''}">${t.text}</span><button class="ghost" onclick="delTask('${AREA}',${t.id})"><i class="ti ti-x" style="font-size:12px"></i></button></div>`).join('');
+  const a=D.areas[AREA], cfg=AC[AREA];
+  const tasks=a.tasks||[];
+  const taskRows=tasks.map(t=>`<div class="row">
+    <button class="chk ${t.done?'done':''}" onclick="toggleTask('${AREA}',${t.id})"></button>
+    <span style="flex:1;font-size:13.5px;${t.done?'text-decoration:line-through;color:var(--ink4)':''}">${t.text}</span>
+    <button class="ghost" onclick="delTask('${AREA}',${t.id})" style="color:var(--ink4);font-size:16px;padding:3px 7px">×</button>
+  </div>`).join('');
 
-  // Trello section (only for Trabajo)
-  let trelloHtml='';
+  /* Trello */
+  let trello='';
   if(AREA==='trabajo'){
-    if(!SETTINGS.trelloKey){
-      trelloHtml=`<div class="info-box warn" style="margin-bottom:14px"><i class="ti ti-brand-trello" style="margin-right:6px"></i>Conectá Trello en <strong>Ajustes</strong> para ver tus tableros acá. <button onclick="go('settings')" style="padding:2px 8px;font-size:11px;margin-left:8px">Ir a ajustes ↗</button></div>`;
-    } else if(TRELLO_LOADING){
-      trelloHtml=`<div style="color:var(--text3);font-size:12px;margin-bottom:14px"><i class="ti ti-loader spin" style="margin-right:6px"></i>Cargando Trello...</div>`;
-    } else if(TRELLO_DATA.cards){
+    if(!CFG.trelloKey){
+      trello=`<div class="ibox warn" style="margin-bottom:16px">Conectá Trello en <strong>Ajustes</strong> para ver tus tableros aquí.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px;padding:3px 10px">Ir →</button></div>`;
+    }else if(TRELLO_LOADING){
+      trello=`<p style="color:var(--ink4);font-size:12.5px;margin-bottom:16px"><span class="spin">◌</span> Conectando con Trello...</p>`;
+    }else if(TRELLO_DATA.cards){
       const byList={};
       (TRELLO_DATA.lists||[]).forEach(l=>byList[l.id]={name:l.name,cards:[]});
-      (TRELLO_DATA.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{ if(byList[c.idList])byList[c.idList].cards.push(c); });
+      (TRELLO_DATA.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{if(byList[c.idList])byList[c.idList].cards.push(c);});
       const listsHtml=Object.values(byList).filter(l=>l.cards.length).map(l=>`
-        <div style="margin-bottom:10px">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px">${l.name}</div>
-          ${l.cards.slice(0,8).map(c=>`<div class="trello-card">${c.name}${c.due?` <span style="color:var(--amber);font-size:10px">· ${fmtDate(c.due)}</span>`:''}</div>`).join('')}
+        <div style="margin-bottom:12px">
+          <p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:6px;font-weight:500">${l.name}</p>
+          ${l.cards.slice(0,8).map(c=>`<div class="tcard">${c.name}${c.due?`<span class="tcard-due">${fmtDate(c.due)}</span>`:''}</div>`).join('')}
         </div>`).join('');
-      trelloHtml=`<div style="margin-bottom:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--blue)"><i class="ti ti-brand-trello" style="margin-right:5px"></i>Trello — ${TRELLO_BOARDS.find(b=>b.id===SETTINGS.activeBoardId)?.name||'Tablero'}</div>
-          <select onchange="selectBoard(this.value)" style="width:auto;font-size:11px;padding:3px 8px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}" ${b.id===SETTINGS.activeBoardId?'selected':''}>${b.name}</option>`).join('')}</select>
+      const activeBoard=TRELLO_BOARDS.find(b=>b.id===CFG.activeBoardId);
+      trello=`<div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500">Trello — ${activeBoard?.name||'Tablero'}</p>
+          <select onchange="selectBoard(this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 10px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}" ${b.id===CFG.activeBoardId?'selected':''}>${b.name}</option>`).join('')}</select>
         </div>
-        ${listsHtml||'<div class="empty">No hay tarjetas activas</div>'}
-      </div>`;
-    } else if(SETTINGS.trelloKey){
-      trelloHtml=`<div class="info-box warn" style="margin-bottom:14px"><i class="ti ti-loader spin" style="margin-right:6px"></i>Conectando con Trello...</div>`;
+        ${listsHtml||'<div class="empty">Sin tarjetas activas</div>'}
+      </div><div class="divider"></div>`;
     }
   }
 
-  // Log section
+  /* Log */
   const hasLog=AREA==='hobbies'||AREA==='fitness';
-  const logOpts=AREA==='hobbies'?['Lectura','Música','Cocina','Salida','Series/Pelis','Otro']:['Gimnasio','Cardio','Caminata','Clase','Meal prep','Dieta limpia','Otro'];
-  const logRows=(a.log||[]).slice().reverse().map(l=>`<div class="row"><i class="ti ${AREA==='hobbies'?'ti-star':'ti-heart-rate'}" style="font-size:13px;color:var(--text2)"></i><div style="flex:1"><div>${l.act}</div>${l.notes?`<div style="color:var(--text3);font-size:11px">${l.notes}</div>`:''}</div><span style="color:var(--text3);font-size:11px">${fmtDate(l.date)}</span><button class="ghost" onclick="delLog('${AREA}',${l.id})"><i class="ti ti-x" style="font-size:12px"></i></button></div>`).join('');
+  const logOpts=AREA==='hobbies'?['Lectura','Música','Cocina','Salida','Series / Pelis','Otro']:['Gimnasio','Cardio','Caminata','Clase','Meal prep','Dieta limpia','Otro'];
+  const logRows=(a.log||[]).slice().reverse().map(l=>`<div class="row">
+    <span style="font-size:13px;color:var(--ink3)">${l.act}</span>
+    <span style="flex:1;font-size:12px;color:var(--ink4);padding-left:10px;font-style:italic">${l.notes||''}</span>
+    <span style="font-size:11.5px;color:var(--ink4);font-family:'DM Mono',monospace">${fmtDate(l.date)}</span>
+    <button class="ghost" onclick="delLog('${AREA}',${l.id})" style="color:var(--ink4);font-size:16px;padding:3px 7px">×</button>
+  </div>`).join('');
 
   document.getElementById('view-areas').innerHTML=`
-    <div style="margin-bottom:12px">${areaPills}</div>
+    <div style="margin-bottom:16px">${pills}</div>
     <div class="card fade">
-      <div class="sh"><div class="sh-l" style="color:${cfg.color}"><i class="ti ${cfg.icon}" style="font-size:15px"></i>${cfg.label}</div></div>
-      ${trelloHtml}
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Notas del área</div>
-        <textarea id="notes-${AREA}" rows="3" placeholder="Notas, estado general, recordatorios..." onblur="saveNotes('${AREA}')">${a.notes||''}</textarea>
+      <div class="sh">
+        <div class="sh-l">
+          <div class="sh-icon" style="background:${cfg.bg};color:${cfg.color};font-size:16px">${cfg.icon}</div>
+          <span style="color:${cfg.color}">${cfg.label}</span>
+        </div>
       </div>
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tareas</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px"><input type="text" id="ti-${AREA}" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTask('${AREA}')" style="flex:1"><button onclick="addTask('${AREA}')"><i class="ti ti-plus"></i></button></div>
-      ${tasks.length===0?`<div class="empty" style="padding:12px">Sin tareas</div>`:taskRows}
-      ${hasLog?`<div style="margin-top:16px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Registro de actividad</div>
-        <div class="grid2" style="margin-bottom:8px"><select id="log-act-${AREA}"><option value="">Seleccioná actividad...</option>${logOpts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select><input type="date" id="log-date-${AREA}" value="${TODAY}"></div>
-        <input type="text" id="log-notes-${AREA}" placeholder="Notas opcionales..." style="margin-bottom:8px">
-        <button onclick="addLog('${AREA}')"><i class="ti ti-plus" style="margin-right:5px"></i>Registrar</button>
-        <div style="margin-top:10px">${(a.log||[]).length===0?`<div class="empty" style="padding:12px">Sin registros</div>`:logRows}</div>
-      </div>`:''}
+      ${trello}
+      <div style="margin-bottom:16px">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:8px;font-weight:500">Notas del área</p>
+        <textarea id="notes-${AREA}" rows="3" placeholder="Estado general, recordatorios, notas..." onblur="saveNotes('${AREA}')">${a.notes||''}</textarea>
+      </div>
+      <div class="divider"></div>
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:10px;font-weight:500;margin-top:16px">Tareas</p>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input type="text" id="ti-${AREA}" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTask('${AREA}')" style="flex:1">
+        <button onclick="addTask('${AREA}')" style="padding:9px 13px">+</button>
+      </div>
+      ${tasks.length===0?`<div class="empty" style="padding:16px">Sin tareas</div>`:taskRows}
+      ${hasLog?`
+        <div class="divider" style="margin-top:16px"></div>
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:10px;font-weight:500;margin-top:16px">Registro de actividad</p>
+        <div class="grid2"><select id="log-act-${AREA}"><option value="">Seleccioná actividad...</option>${logOpts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select><input type="date" id="log-date-${AREA}" value="${TODAY}"></div>
+        <input type="text" id="log-notes-${AREA}" placeholder="Notas opcionales..." style="margin-bottom:10px">
+        <button onclick="addLog('${AREA}')" style="font-size:12.5px">+ Registrar</button>
+        <div style="margin-top:12px">${(a.log||[]).length===0?`<div class="empty" style="padding:12px">Sin registros</div>`:logRows}</div>`:''}
     </div>`;
 }
 
-function finSection(title,icon,lk,type,items){
+/* ── FINANZAS ──────────────────────────────────────────────── */
+function finSection(title,lk,type,items){
   const showForm=FIN_FORM===type;
-  const stC={pending:'var(--amber)',paid:'var(--green)',enviada:'var(--blue)',ganada:'var(--green)',perdida:'var(--red)',seguimiento:'var(--amber)'};
-  const stL={pending:'Pendiente',paid:'Cobrado',enviada:'Enviada',ganada:'Ganada',perdida:'Perdida',seguimiento:'Seguimiento'};
+  const ST={pending:'var(--amber)',paid:'var(--green)',enviada:'var(--blue)',ganada:'var(--green)',perdida:'var(--red)',seguimiento:'var(--amber)'};
+  const SL={pending:'Pendiente',paid:'Cobrado',enviada:'Enviada',ganada:'Ganada',perdida:'Perdida',seguimiento:'Seguimiento'};
   const rows=items.map(x=>{
     const isOD=x.status==='pending'&&x.dueDate&&new Date(x.dueDate)<new Date();
     const isNr=x.status==='pending'&&x.dueDate&&new Date(x.dueDate)<=new Date(Date.now()+7*864e5);
     const lbl=x.client||x.vendor||x.category||'—';
-    const parts=[x.service,x.amount?`$${x.amount}`:'',x.dueDate?fmtDate(x.dueDate):'',x.sentDate?`Enviada ${fmtDate(x.sentDate)}`:x.followUpDate?`Follow-up ${fmtDate(x.followUpDate)}`:''].filter(Boolean).join(' · ');
-    const warn=isOD?` <span style="color:var(--red);font-size:10px">VENCIDO</span>`:isNr?` <span style="color:var(--amber);font-size:10px">PRÓXIMO</span>`:'';
-    const sel=type==='propuesta'?`<select onchange="setPropStatus(${x.id},this.value)" style="font-size:11px;padding:2px 8px;width:auto">${['enviada','seguimiento','ganada','perdida'].map(s=>`<option value="${s}" ${x.status===s?'selected':''}>${stL[s]}</option>`).join('')}</select>`
-      :`<span class="badge" style="color:${stC[x.status]||'var(--text2)'}">${stL[x.status]||x.status}</span>`;
-    return `<div class="row"><div style="flex:1"><div style="color:${isOD?'var(--red)':'var(--text)'}">${lbl}${warn}</div><div style="color:var(--text3);font-size:11px">${parts}</div></div>${sel}${x.status==='pending'&&type!=='propuesta'?`<button class="ghost" onclick="markPaid('${lk}',${x.id})" title="Marcar pagado"><i class="ti ti-check" style="font-size:13px;color:var(--green)"></i></button>`:''}<button class="ghost" onclick="delFin('${lk}',${x.id})"><i class="ti ti-x" style="font-size:12px"></i></button></div>`;}).join('');
+    const parts=[x.service,x.amount?`$${x.amount}`:'',x.dueDate?fmtDate(x.dueDate):'',x.sentDate?`Enviada ${fmtDate(x.sentDate)}`:''].filter(Boolean).join(' · ');
+    const warn=isOD?` <span style="color:var(--red);font-size:11px;font-weight:600">VENCIDO</span>`:isNr?` <span style="color:var(--amber);font-size:11px;font-weight:500">PRÓXIMO</span>`:'';
+    const sel=type==='propuesta'
+      ?`<select onchange="setPropStatus(${x.id},this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 8px">${['enviada','seguimiento','ganada','perdida'].map(s=>`<option value="${s}" ${x.status===s?'selected':''}>${SL[s]}</option>`).join('')}</select>`
+      :`<span style="font-size:11.5px;color:${ST[x.status]||'var(--ink3)'};font-weight:500">${SL[x.status]||x.status}</span>`;
+    return `<div class="row">
+      <div style="flex:1">
+        <p style="font-size:13.5px;color:${isOD?'var(--red)':'var(--ink)'}">${lbl}${warn}</p>
+        <p style="font-size:12px;color:var(--ink4);margin-top:1px;font-family:'DM Mono',monospace">${parts}</p>
+      </div>
+      ${sel}
+      ${x.status==='pending'&&type!=='propuesta'?`<button class="ghost" onclick="markPaid('${lk}',${x.id})" title="Marcar pagado" style="color:var(--green);font-size:16px">✓</button>`:''}
+      <button class="ghost" onclick="delFin('${lk}',${x.id})" style="color:var(--ink4);font-size:16px;padding:3px 7px">×</button>
+    </div>`;}).join('');
 
-  const ffId=s=>`ff-${type}-${s}`;
-  const inp=(id,ph,t='text')=>`<input id="${ffId(id)}" type="${t}" placeholder="${ph}">`;
-  let formFields='';
-  if(type==='cobro') formFields=`<div class="grid2">${inp('client','Cliente *')}${inp('amount','Monto *','number')}</div><div class="grid2" style="margin-top:8px">${inp('dueDate','','date')}<div style="display:flex;align-items:center;font-size:11px;color:var(--text3)">Fecha de vencimiento</div></div>${inp('notes','Notas (opcional)')}`;
-  if(type==='pago')  formFields=`<div class="grid2">${inp('vendor','Proveedor/Servicio *')}${inp('amount','Monto *','number')}</div><div class="grid2" style="margin-top:8px">${inp('dueDate','','date')}<div style="display:flex;align-items:center;font-size:11px;color:var(--text3)">Fecha de vencimiento</div></div>${inp('notes','Notas (opcional)')}`;
-  if(type==='propuesta') formFields=`<div class="grid2">${inp('client','Cliente *')}${inp('service','Servicio *')}</div><div class="grid2" style="margin-top:8px">${inp('amount','Monto (opcional)','number')}${inp('sentDate','','date')}</div><div style="margin-top:8px"><label style="font-size:11px;color:var(--text3)">Follow-up programado:</label>${inp('followUpDate','','date')}</div>${inp('notes','Notas')}`;
+  const inp=(id,ph,t='text')=>`<input id="ff-${type}-${id}" type="${t}" placeholder="${ph}">`;
+  let ff='';
+  if(type==='cobro') ff=`<div class="grid2">${inp('client','Cliente *')}${inp('amount','Monto *','number')}</div><div class="grid2">${inp('dueDate','','date')}<label style="font-size:12px;color:var(--ink3);display:flex;align-items:center">Vencimiento</label></div>${inp('notes','Notas (opcional)')}`;
+  if(type==='pago')  ff=`<div class="grid2">${inp('vendor','Proveedor *')}${inp('amount','Monto *','number')}</div><div class="grid2">${inp('dueDate','','date')}<label style="font-size:12px;color:var(--ink3);display:flex;align-items:center">Vencimiento</label></div>${inp('notes','Notas')}`;
+  if(type==='propuesta') ff=`<div class="grid2">${inp('client','Cliente *')}${inp('service','Servicio *')}</div><div class="grid2">${inp('amount','Monto (opcional)','number')}${inp('sentDate','','date')}</div><label style="font-size:12px;color:var(--ink3);display:block;margin:8px 0 4px">Follow-up programado</label>${inp('followUpDate','','date')}<div style="margin-top:8px">${inp('notes','Notas')}</div>`;
 
-  return `<div class="card"><div class="sh"><div class="sh-l"><i class="ti ${icon}" style="font-size:15px"></i>${title}</div><button onclick="FIN_FORM=FIN_FORM==='${type}'?null:'${type}';renderFinanzas()"><i class="ti ti-plus" style="margin-right:4px;font-size:12px"></i>Agregar</button></div>
-    ${showForm?`<div style="background:var(--bg3);border-radius:var(--radius);padding:12px;margin-bottom:12px"><div style="font-weight:500;margin-bottom:10px;text-transform:capitalize">Nuevo ${type}</div>${formFields}<div style="display:flex;gap:8px;margin-top:10px"><button class="primary" onclick="saveFinance('${type}')">Guardar</button><button onclick="FIN_FORM=null;renderFinanzas()">Cancelar</button></div></div>`:''}
+  return `<div class="card">
+    <div class="sh">
+      <div class="sh-l">${title}</div>
+      <button onclick="FIN_FORM=FIN_FORM==='${type}'?null:'${type}';renderFinanzas()" style="font-size:12.5px">+ Agregar</button>
+    </div>
+    ${showForm?`<div class="iform"><p style="font-weight:500;margin-bottom:12px;font-size:13px;text-transform:capitalize">Nuevo ${type}</p>${ff}<div style="display:flex;gap:8px;margin-top:12px"><button class="primary" onclick="saveFinance('${type}')" style="font-size:12.5px">Guardar</button><button onclick="FIN_FORM=null;renderFinanzas()" style="font-size:12.5px">Cancelar</button></div></div>`:''}
     ${items.length===0&&!showForm?`<div class="empty">Sin registros</div>`:rows}
   </div>`;
 }
-
 function renderFinanzas(){
   document.getElementById('view-finanzas').innerHTML=
-    finSection('Cobros','ti-cash','cobros','cobro',D.finanzas.cobros||[])+
-    finSection('Propuestas','ti-send','propuestas','propuesta',D.finanzas.propuestas||[])+
-    finSection('Pagos a proveedores','ti-credit-card','pagos','pago',D.finanzas.pagos||[]);
+    finSection('Cobros','cobros','cobro',D.finanzas.cobros||[])+
+    finSection('Propuestas','propuestas','propuesta',D.finanzas.propuestas||[])+
+    finSection('Pagos a proveedores','pagos','pago',D.finanzas.pagos||[]);
 }
 
+/* ── CONTEXTO ──────────────────────────────────────────────── */
 function renderContexto(){
-  const refEntries=Object.entries(D.reflections||{}).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);
+  const refs=Object.entries(D.reflections||{}).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);
   document.getElementById('view-contexto').innerHTML=`
     <div class="card fade">
-      <div class="sh"><div class="sh-l"><i class="ti ti-user" style="font-size:15px;color:var(--amber)"></i>Mi contexto de vida</div></div>
-      <div style="color:var(--text2);margin-bottom:10px;font-size:12px;line-height:1.7">Contame cómo está tu vida hoy — proyectos activos, situación familiar, qué está bien y qué está trabado. Cuanto más detalle, más personalizadas son las preguntas y prioridades.</div>
-      <textarea id="ctx-inp" rows="12" placeholder="Ej: Tengo una agencia de marketing con 3 empleados, un proyecto con inversores chinos en negociación, una productora que recién arranca...&#10;&#10;Mi novia está embarazada de 5 meses, mi hija nace en agosto...&#10;&#10;En el gym voy 3 veces por semana pero últimamente falto mucho...&#10;&#10;Lo que más me estresa ahora mismo es...">${D.context||''}</textarea>
-      <div style="margin-top:10px"><button class="primary" onclick="saveContext()"><i class="ti ti-device-floppy" style="margin-right:8px"></i>Guardar contexto</button></div>
+      <div class="sh"><div class="sh-l">Mi contexto de vida</div></div>
+      <p style="color:var(--ink3);margin-bottom:12px;font-size:13px;line-height:1.7">Contame cómo está tu vida hoy — proyectos, familia, qué está bien y qué está trabado. Cuanto más detalle, más precisas son las preguntas y prioridades del check-in.</p>
+      <textarea id="ctx-inp" rows="13" placeholder="Ej: Tengo una agencia de marketing con 3 empleados, un proyecto con inversores chinos en negociación, una productora que recién arranca...&#10;&#10;Mi novia está embarazada de 5 meses, mi hija nace en agosto...&#10;&#10;En el gym voy 3 veces por semana pero últimamente falto mucho...">${D.context||''}</textarea>
+      <button class="primary" onclick="saveContext()" style="margin-top:12px;font-size:12.5px">Guardar contexto</button>
     </div>
-    ${refEntries.length?`<div class="card"><div class="sh"><div class="sh-l"><i class="ti ti-history" style="font-size:15px"></i>Historial de reflexiones</div></div>
-      ${refEntries.map(([date,ref])=>`<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
-        <div style="font-weight:500;margin-bottom:8px">${new Date(date+'T12:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</div>
-        ${ref.coaching?`<div class="info-box coach" style="margin-bottom:8px;font-size:12px"><i class="ti ti-bulb" style="margin-right:5px"></i>${ref.coaching}</div>`:''}
-        ${(ref.questions||[]).map((q,i)=>`<div style="margin-bottom:5px"><div style="color:var(--text2);font-size:12px">${q}</div><div style="color:var(--text3);font-size:12px;padding-left:10px;font-style:italic">${ref.answers?.[i]||'—'}</div></div>`).join('')}
+    ${refs.length?`<div class="card">
+      <div class="sh"><div class="sh-l">Historial de reflexiones</div></div>
+      ${refs.map(([date,ref])=>`<div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--bone2)">
+        <p style="font-family:'Cormorant',serif;font-size:17px;font-weight:600;margin-bottom:10px;letter-spacing:-.02em">${new Date(date+'T12:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</p>
+        ${ref.coaching?`<div class="ibox coach" style="margin-bottom:10px;font-size:12.5px">💡 ${ref.coaching}</div>`:''}
+        ${(ref.questions||[]).map((q,i)=>`<div style="margin-bottom:7px"><p style="font-size:12.5px;color:var(--ink2)">${q}</p><p style="font-size:12.5px;color:var(--ink4);padding-left:12px;font-style:italic;margin-top:2px">${ref.answers?.[i]||'—'}</p></div>`).join('')}
       </div>`).join('')}
     </div>`:''}`;
 }
 
+/* ── SETTINGS ──────────────────────────────────────────────── */
 function renderSettings(){
   document.getElementById('view-settings').innerHTML=`
     <div class="card fade">
-      <div class="sh"><div class="sh-l"><i class="ti ti-brand-trello" style="font-size:15px;color:var(--blue)"></i>Integración Trello</div></div>
-      <div style="color:var(--text2);font-size:12px;margin-bottom:12px;line-height:1.7">Obtené tu API Key y Token en <a href="https://trello.com/app-key" target="_blank" style="color:var(--blue)">trello.com/app-key</a>. Generá el token haciendo clic en "Token" en esa misma página.</div>
-      <div style="margin-bottom:8px"><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">API Key</label><input id="s-trello-key" type="text" placeholder="Pegá tu API Key..." value="${SETTINGS.trelloKey||''}"></div>
-      <div style="margin-bottom:12px"><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Token</label><input id="s-trello-token" type="text" placeholder="Pegá tu Token..." value="${SETTINGS.trelloToken||''}"></div>
-      <button class="primary" onclick="saveSettings()"><i class="ti ti-check" style="margin-right:8px"></i>Guardar y conectar</button>
-      <div id="s-msg" style="display:none;margin-top:8px;color:var(--green);font-size:12px"><i class="ti ti-check"></i> Configuración guardada</div>
-      ${TRELLO_BOARDS.length?`<div style="margin-top:16px"><div style="font-size:11px;color:var(--text3);margin-bottom:8px">Seleccioná el tablero principal de la agencia:</div>${TRELLO_BOARDS.map(b=>`<div class="row"><span style="flex:1">${b.name}</span><button onclick="selectBoard('${b.id}')" style="font-size:11px;${SETTINGS.activeBoardId===b.id?'color:var(--green)':''}">${SETTINGS.activeBoardId===b.id?'✓ Activo':'Seleccionar'}</button></div>`).join('')}</div>`:''}
+      <div class="sh"><div class="sh-l">Integración Trello</div></div>
+      <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:14px">Obtené tu API Key y Token en <a href="https://trello.com/app-key" target="_blank" style="color:var(--blue)">trello.com/app-key</a>. Hacé clic en "Token" en esa misma página para generar el token.</p>
+      <div style="margin-bottom:10px"><label style="font-size:11.5px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">API Key</label><input id="s-tk" type="text" placeholder="Pegá tu API Key..." value="${CFG.trelloKey||''}"></div>
+      <div style="margin-bottom:14px"><label style="font-size:11.5px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">Token</label><input id="s-tt" type="text" placeholder="Pegá tu Token..." value="${CFG.trelloToken||''}"></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="primary" onclick="saveSettings()" style="font-size:12.5px">Conectar Trello</button>
+        <div id="s-msg" style="display:none;align-items:center;gap:6px;font-size:12.5px;color:var(--green);font-weight:500">✓ Guardado</div>
+      </div>
+      ${TRELLO_BOARDS.length?`<div style="margin-top:20px"><div class="divider"></div><p style="font-size:11.5px;color:var(--ink3);margin:16px 0 10px;font-weight:500">Tablero principal de la agencia</p>${TRELLO_BOARDS.map(b=>`<div class="row"><span style="flex:1;font-size:13.5px">${b.name}</span><button onclick="selectBoard('${b.id}')" style="font-size:12px;${CFG.activeBoardId===b.id?'color:var(--green);font-weight:600':''}">${CFG.activeBoardId===b.id?'✓ Activo':'Seleccionar'}</button></div>`).join('')}</div>`:''}
     </div>
     <div class="card">
-      <div class="sh"><div class="sh-l"><i class="ti ti-brand-whatsapp" style="font-size:15px;color:var(--green)"></i>Bot de WhatsApp</div></div>
-      <div style="color:var(--text2);font-size:12px;line-height:1.7">El bot de WhatsApp se configura en el servidor. Una vez deployado, vas a recibir briefings automáticos a las 7am, 12pm y 7pm.<br><br>Comandos disponibles en WhatsApp:<br>
-        <div style="margin-top:8px"><code style="background:var(--bg3);padding:2px 6px;border-radius:4px">briefing</code> → resumen matutino<br><code style="background:var(--bg3);padding:2px 6px;border-radius:4px">prioridades</code> → tus top 3<br><code style="background:var(--bg3);padding:2px 6px;border-radius:4px">finanzas</code> → cobros y pagos<br><code style="background:var(--bg3);padding:2px 6px;border-radius:4px">trello</code> → tarjetas activas<br>O escribí cualquier cosa y te respondo.</div>
+      <div class="sh"><div class="sh-l">WhatsApp Bot</div></div>
+      <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:12px">El bot está activo en el servidor. Vas a recibir briefings automáticos a las 7am, 12pm y 7pm.</p>
+      <div style="background:var(--bone);border:1px solid var(--bone3);border-radius:var(--r-lg);padding:14px">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:10px;font-weight:500">Comandos disponibles</p>
+        ${['briefing → Resumen del día','prioridades → Tus top 3','finanzas → Cobros y pagos','trello → Tarjetas activas','ayuda → Lista de comandos'].map(c=>`<p style="font-size:13px;color:var(--ink2);margin-bottom:5px;font-family:'DM Mono',monospace"><span style="color:var(--blue)">${c.split('→')[0]}</span><span style="color:var(--ink4)">→${c.split('→')[1]}</span></p>`).join('')}
       </div>
     </div>`;
 }
