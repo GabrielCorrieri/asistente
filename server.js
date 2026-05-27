@@ -15,6 +15,73 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const ai = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+
+// ── Google Calendar ───────────────────────────────────────────────
+const { google } = require('googleapis');
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
+const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+const REDIRECT_URI = `${process.env.BASE_URL || 'https://asistentepersonal.up.railway.app'}/auth/google/callback`;
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  REDIRECT_URI
+);
+
+// Store tokens in DB
+async function saveTokens(tokens) {
+  const data = await loadData();
+  data.googleTokens = tokens;
+  await saveData(data);
+}
+async function getTokens() {
+  const data = await loadData();
+  return data.googleTokens || null;
+}
+async function getCalendarClient() {
+  const tokens = await getTokens();
+  if (!tokens) return null;
+  oauth2Client.setCredentials(tokens);
+  if (tokens.expiry_date && tokens.expiry_date < Date.now()) {
+    try {
+      const { credentials } = await oauth2Client.refreshAccessToken();
+      await saveTokens(credentials);
+      oauth2Client.setCredentials(credentials);
+    } catch(e) { return null; }
+  }
+  return google.calendar({ version: 'v3', auth: oauth2Client });
+}
+
+app.use(session({ secret: process.env.SESSION_SECRET || 'gus-secret-2026', resave: false, saveUninitialized: false }));
+
+// ── Auth routes ───────────────────────────────────────────────────
+app.get('/auth/google', (req, res) => {
+  const url = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+    prompt: 'consent'
+  });
+  res.redirect(url);
+});
+
+app.get('/auth/google/callback', async (req, res) => {
+  try {
+    const { tokens } = await oauth2Client.getToken(req.query.code);
+    await saveTokens(tokens);
+    res.send('<html><body style="font-family:sans-serif;text-align:center;padding:3rem"><h2>✅ Google Calendar conectado</h2><p>Ya podés cerrar esta ventana y usar GUS.</p></body></html>');
+  } catch(e) {
+    res.send('<html><body style="font-family:sans-serif;text-align:center;padding:3rem"><h2>❌ Error</h2><p>' + e.message + '</p></body></html>');
+  }
+});
+
+app.get('/auth/status', async (req, res) => {
+  const tokens = await getTokens();
+  res.json({ connected: !!tokens });
+});
+
 // ── PostgreSQL setup ──────────────────────────────────────────────
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
@@ -218,6 +285,36 @@ es
 
 // ── AGENT CORE ────────────────────────────────────────────────────
 async function agentReply(message, data) {
+  const msg = message.toLowerCase();
+
+  // Detect calendar create intent
+  const createKeywords = ['agendá','agenda','anotá','agendame','creá','crear reunión','nueva reunión','agendame','recordame','agendá','schedulea','añadí','añadime'];
+  const isCreateIntent = createKeywords.some(k => msg.includes(k));
+  if (isCreateIntent) {
+    const event = await parseAndCreateEvent(message, data);
+    if (event) {
+      const start = event.start?.dateTime || event.start?.date;
+      const time = start ? new Date(start).toLocaleString('es-AR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '';
+      let reply = `✅ *Evento creado:* ${event.summary}\n📅 ${time}`;
+      if (event.location) reply += `\n📍 ${event.location}`;
+      if (event.hangoutLink) reply += `\n📹 Meet: ${event.hangoutLink}`;
+      return reply;
+    } else {
+      return '⚠️ No pude interpretar la fecha/hora. Probá con algo más específico, ej: "Agendame reunión con Martín el jueves a las 15hs"';
+    }
+  }
+
+  // Detect calendar read intent
+  const readKeywords = ['agenda','calendario','eventos','reuniones','qué tengo','tengo hoy','tengo mañana','semana'];
+  const isReadIntent = readKeywords.some(k => msg.includes(k)) && !isCreateIntent;
+  if (isReadIntent) {
+    const events = msg.includes('semana') ? await getEventsWeek() : await getEventsToday();
+    if (!events.length) return '📅 No tenés eventos ' + (msg.includes('semana') ? 'esta semana' : 'hoy') + '.';
+    const title = msg.includes('semana') ? '📅 *Tu semana:*' : '📅 *Agenda de hoy:*';
+    return title + '\n' + events.map(fmtEvent).join('\n');
+  }
+
+
   const key   = process.env.TRELLO_API_KEY;
   const token = process.env.TRELLO_TOKEN;
   const cfg   = JSON.parse(data.trelloCfg || '{}');
@@ -322,6 +419,15 @@ async function buildBriefing(data, period) {
   const up = (data.finanzas?.pagos||[]).filter(p=>p.status==='pending'&&p.dueDate&&new Date(p.dueDate)<=new Date(Date.now()+7*864e5));
   const allTasks = Object.entries(data.areas||{}).flatMap(([a,v])=>(v.tasks||[]).filter(t=>!t.done).map(t=>({...t,area:a})));
 
+  // Get today's events
+  let calendarCtx = '';
+  try {
+    const events = await getEventsToday();
+    if (events.length) {
+      calendarCtx = '\n\nAGENDA HOY:\n' + events.map(fmtEvent).join('\n');
+    }
+  } catch(e) {}
+
   const prompt = `Sos GUS, el asistente personal de un emprendedor argentino. Generá un briefing ${period==='morning'?'matutino':'del día'} para WhatsApp. Máximo 250 palabras. Usá emojis y formato *negrita* de WhatsApp.
 
 CONTEXTO DEL USUARIO:
@@ -333,7 +439,7 @@ ALERTAS:
 - Pagos próximos: ${up.length}
 - Tareas pendientes: ${allTasks.length}
 
-PRIORIDADES ACTIVAS: ${(data.priorities||[]).join(' / ')||'ninguna'}
+PRIORIDADES ACTIVAS: ${(data.prioritiesLab||[]).join(' / ')||'ninguna'}${calendarCtx}
 
 Terminá con 1 frase de coaching corta y potente.`;
 
@@ -415,6 +521,133 @@ function escapeXml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+
+// ── Calendar helpers ──────────────────────────────────────────────
+async function getEventsToday() {
+  const cal = await getCalendarClient();
+  if (!cal) return [];
+  const now = new Date();
+  const start = new Date(now); start.setHours(0,0,0,0);
+  const end   = new Date(now); end.setHours(23,59,59,999);
+  try {
+    const res = await cal.events.list({
+      calendarId: 'primary',
+      timeMin: start.toISOString(),
+      timeMax: end.toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 20
+    });
+    return res.data.items || [];
+  } catch(e) { return []; }
+}
+
+async function getEventsWeek() {
+  const cal = await getCalendarClient();
+  if (!cal) return [];
+  const now = new Date();
+  const end = new Date(now); end.setDate(end.getDate() + 7);
+  try {
+    const res = await cal.events.list({
+      calendarId: 'primary',
+      timeMin: now.toISOString(),
+      timeMax: end.toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 30
+    });
+    return res.data.items || [];
+  } catch(e) { return []; }
+}
+
+async function createEvent(eventData) {
+  const cal = await getCalendarClient();
+  if (!cal) return null;
+  try {
+    const res = await cal.events.insert({
+      calendarId: 'primary',
+      conferenceDataVersion: 1,
+      resource: eventData
+    });
+    return res.data;
+  } catch(e) { console.error('createEvent error:', e.message); return null; }
+}
+
+async function parseAndCreateEvent(message, data) {
+  // Use AI to extract event details from natural language
+  const prompt = `Extraé los detalles del evento de este mensaje en español: "${message}"
+
+Contexto del usuario: ${(data.context||'').slice(0,300)}
+Fecha y hora actual: ${new Date().toLocaleString('es-AR')}
+
+Respondé SOLO JSON sin markdown:
+{
+  "summary": "título del evento",
+  "startDateTime": "2026-05-27T15:00:00-03:00",
+  "endDateTime": "2026-05-27T16:00:00-03:00",
+  "description": "descripción opcional",
+  "location": "ubicación opcional o null",
+  "addMeet": true/false,
+  "attendees": ["email1@gmail.com"] o []
+}
+
+Si no podés extraer fecha/hora concreta, poné null en startDateTime.`;
+
+  try {
+    const r = await ai.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 400,
+      messages: [{ role: 'user', content: prompt }]
+    });
+    const txt = r.content[0]?.text || '';
+    const parsed = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    
+    if (!parsed.startDateTime) return null;
+
+    const eventResource = {
+      summary: parsed.summary,
+      description: parsed.description || '',
+      start: { dateTime: parsed.startDateTime, timeZone: 'America/Argentina/Buenos_Aires' },
+      end:   { dateTime: parsed.endDateTime,   timeZone: 'America/Argentina/Buenos_Aires' },
+    };
+    if (parsed.location) eventResource.location = parsed.location;
+    if (parsed.addMeet) {
+      eventResource.conferenceData = {
+        createRequest: { requestId: Date.now().toString(), conferenceSolutionKey: { type: 'hangoutsMeet' } }
+      };
+    }
+    if (parsed.attendees?.length) {
+      eventResource.attendees = parsed.attendees.map(e => ({ email: e }));
+    }
+    return await createEvent(eventResource);
+  } catch(e) { console.error('parseAndCreateEvent error:', e.message); return null; }
+}
+
+function fmtEvent(ev) {
+  const start = ev.start?.dateTime || ev.start?.date || '';
+  const time = start ? new Date(start).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
+  const meet = ev.hangoutLink ? ` 📹 ${ev.hangoutLink}` : '';
+  const loc = ev.location ? ` 📍 ${ev.location}` : '';
+  return `${time ? time + ' — ' : ''}*${ev.summary}*${loc}${meet}`;
+}
+
+// Calendar endpoint for web app
+app.get('/api/calendar/today', async (req, res) => {
+  const events = await getEventsToday();
+  res.json({ events });
+});
+
+app.get('/api/calendar/week', async (req, res) => {
+  const events = await getEventsWeek();
+  res.json({ events });
+});
+
+app.post('/api/calendar/create', async (req, res) => {
+  const data = await loadData();
+  const event = await parseAndCreateEvent(req.body.message, data);
+  res.json({ event, ok: !!event });
+});
+
 // ── Scheduled briefings (hora Argentina = UTC-3) ──────────────────
 async function sendWhatsApp(text) {
   const to  = process.env.WHATSAPP_MY_NUMBER;
@@ -427,6 +660,28 @@ async function sendWhatsApp(text) {
     await twilio.messages.create({ from:`whatsapp:${from}`, to:`whatsapp:${to}`, body:text });
   } catch(e) { console.error('WhatsApp send error:', e.message); }
 }
+
+
+// ── 30-min event reminders ────────────────────────────────────────
+setInterval(async () => {
+  try {
+    const events = await getEventsToday();
+    const now = Date.now();
+    for (const ev of events) {
+      const start = ev.start?.dateTime;
+      if (!start) continue;
+      const startMs = new Date(start).getTime();
+      const diff = startMs - now;
+      // Between 29 and 31 minutes away
+      if (diff > 29 * 60000 && diff < 31 * 60000) {
+        const data = await loadData();
+        const time = new Date(start).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+        const msg = `⏰ *En 30 minutos:* ${ev.summary} a las ${time}${ev.location ? ' en ' + ev.location : ''}${ev.hangoutLink ? '\n📹 ' + ev.hangoutLink : ''}`;
+        await sendWhatsApp(msg);
+      }
+    }
+  } catch(e) {}
+}, 60000); // Check every minute
 
 // 7:00 AM ART (10:00 UTC)
 cron.schedule('0 10 * * *', async () => {

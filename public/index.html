@@ -495,6 +495,7 @@ function renderLab(){
   const subs=[
     {id:'tareas',    label:'Tareas'},
     {id:'proyectos', label:'Proyectos'},
+    {id:'calendario',label:'Calendario'},
     {id:'reuniones', label:'Reuniones'},
     {id:'recordatorios',label:'Recordatorios'},
     {id:'trello',    label:'Trello'},
@@ -568,7 +569,57 @@ function renderLab(){
     ${recs.length===0?`<div class="empty">Sin recordatorios</div>`:rows}`;
   }
 
-  else if(LAB_SUB==='trello'){
+  else if(LAB_SUB==='calendario'){
+    // Check auth status
+    const authStatus = await api('/auth/status');
+    const connected = authStatus?.connected;
+    
+    if(!connected){
+      content=`<div style="text-align:center;padding:2rem">
+        <p style="font-size:14px;color:var(--ink2);margin-bottom:16px;line-height:1.7">Conectá tu Google Calendar para ver y crear eventos directamente en GUS.</p>
+        <a href="/auth/google" style="display:inline-block;background:var(--blue);color:#fff;padding:12px 24px;border-radius:var(--r);font-size:13px;font-weight:500;text-decoration:none;letter-spacing:.03em;text-transform:uppercase">Conectar Google Calendar</a>
+      </div>`;
+    } else {
+      const todayEvs = await api('/api/calendar/today');
+      const weekEvs  = await api('/api/calendar/week');
+      const events   = todayEvs?.events || [];
+      const weekEvents = weekEvs?.events || [];
+      
+      const fmtTime = ev => {
+        const s = ev.start?.dateTime || ev.start?.date;
+        return s ? new Date(s).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
+      };
+      const fmtDay = ev => {
+        const s = ev.start?.dateTime || ev.start?.date;
+        return s ? new Date(s).toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'}) : '';
+      };
+
+      const evRow = ev => `<div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--bone2);align-items:flex-start">
+        <span style="font-size:12px;color:var(--blue);font-family:'DM Mono',monospace;min-width:42px;padding-top:1px">${fmtTime(ev)}</span>
+        <div style="flex:1">
+          <p style="font-size:13.5px;font-weight:500">${ev.summary||'Sin título'}</p>
+          ${ev.location?`<p style="font-size:12px;color:var(--ink3)">📍 ${ev.location}</p>`:''}
+          ${ev.hangoutLink?`<a href="${ev.hangoutLink}" target="_blank" style="font-size:12px;color:var(--blue)">📹 Unirse al Meet</a>`:''}
+        </div>
+      </div>`;
+
+      content=`<div style="margin-bottom:16px">
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <input type="text" id="cal-inp" placeholder='Ej: "Reunión con Martín el jueves a las 15hs con Meet"' style="flex:1" onkeydown="if(event.key==='Enter')createCalEvent()">
+          <button onclick="createCalEvent()" style="padding:9px 14px;background:var(--blue);border-color:var(--blue);color:#fff;font-size:12.5px">+ Agendar</button>
+        </div>
+        <div id="cal-msg" style="display:none;margin-bottom:10px"></div>
+      </div>
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500;margin-bottom:10px">Hoy</p>
+      ${events.length?events.map(evRow).join(''):'<div class="empty" style="padding:14px">Sin eventos hoy</div>'}
+      <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);font-weight:500;margin:16px 0 10px">Esta semana</p>
+      ${weekEvents.filter(e=>fmtDay(e)!==new Date().toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'})).slice(0,10).map(ev=>`<div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--bone2)"><span style="font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;min-width:70px">${fmtDay(ev)}</span><span style="font-size:13.5px">${ev.summary||'Sin título'}</span></div>`).join('')||'<div class="empty" style="padding:14px">Sin eventos esta semana</div>'}
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bone2)">
+        <p style="font-size:12px;color:var(--ink3)">✅ Google Calendar conectado · <a href="/auth/google" style="color:var(--blue);font-size:12px">Reconectar</a></p>
+      </div>`;
+    }
+  }
+    else if(LAB_SUB==='trello'){
     if(!CFG.trelloKey){
       content=`<div class="ibox warn">Conectá Trello en <strong>Ajustes</strong> para ver tus tableros.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px">Ir →</button></div>`;
     }else if(TRELLO_LOADING){
@@ -970,6 +1021,22 @@ function stopListening(){
   const btn = document.getElementById('voice-btn');
   if(btn){ btn.className='voice-btn'; btn.textContent='🎙'; }
   document.getElementById('voice-status').textContent = '';
+}
+
+
+async function createCalEvent(){
+  const inp = document.getElementById('cal-inp');
+  const msg = inp?.value?.trim();
+  if(!msg) return;
+  const msgEl = document.getElementById('cal-msg');
+  if(msgEl){ msgEl.style.display='block'; msgEl.innerHTML='<span style="color:var(--ink3);font-size:13px">Creando evento...</span>'; }
+  const r = await api('/api/calendar/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+  if(r?.ok){
+    if(inp) inp.value='';
+    if(msgEl){ msgEl.innerHTML='<span style="color:var(--green);font-size:13px">✓ Evento creado en tu calendario</span>'; setTimeout(()=>{msgEl.style.display='none';renderAreas();},2000); }
+  } else {
+    if(msgEl){ msgEl.innerHTML='<span style="color:var(--red);font-size:13px">⚠️ No pude interpretar la fecha. Sé más específico.</span>'; setTimeout(()=>msgEl.style.display='none',3000); }
+  }
 }
 
 </script>
