@@ -4,10 +4,10 @@ const path    = require('path');
 const fs      = require('fs');
 const cron    = require('node-cron');
 const Anthropic = require('@anthropic-ai/sdk');
+const { Pool } = require('pg');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
-const DATA = path.join(__dirname, 'data', 'data.json');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -15,22 +15,53 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const ai = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// ── Data helpers ─────────────────────────────────────────────────
-function loadData() {
-  try { return JSON.parse(fs.readFileSync(DATA, 'utf8')); }
-  catch { return { context:'', areas:{}, finanzas:{cobros:[],pagos:[],propuestas:[]}, priorities:[], reflections:{} }; }
+// ── PostgreSQL setup ──────────────────────────────────────────────
+const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+
+async function initDB() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS gus_data (
+      id TEXT PRIMARY KEY DEFAULT 'main',
+      data JSONB NOT NULL DEFAULT '{}'
+    )
+  `);
+  // Insert default row if not exists
+  await pool.query(`
+    INSERT INTO gus_data (id, data) VALUES ('main', '{}')
+    ON CONFLICT (id) DO NOTHING
+  `);
+  console.log('✅ PostgreSQL conectado');
 }
-function saveData(d) { fs.writeFileSync(DATA, JSON.stringify(d, null, 2)); }
+initDB().catch(e => console.error('DB init error:', e.message));
+
+// ── Data helpers ──────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await pool.query("SELECT data FROM gus_data WHERE id='main'");
+    return res.rows[0]?.data || {};
+  } catch(e) {
+    console.error('loadData error:', e.message);
+    return {};
+  }
+}
+async function saveData(d) {
+  try {
+    await pool.query(
+      "INSERT INTO gus_data (id, data) VALUES ('main', $1) ON CONFLICT (id) DO UPDATE SET data=$1",
+      [JSON.stringify(d)]
+    );
+  } catch(e) { console.error('saveData error:', e.message); }
+}
 
 // ── REST API ──────────────────────────────────────────────────────
-app.get('/api/data',  (_, res) => res.json(loadData()));
-app.post('/api/data', (req, res) => { saveData(req.body); res.json({ ok: true }); });
+app.get('/api/data',  async (_, res) => res.json(await loadData()));
+app.post('/api/data', async (req, res) => { await saveData(req.body); res.json({ ok: true }); });
 
 // Anthropic proxy — full agent context for web chat
 app.post('/api/ai', async (req, res) => {
   try {
     const { prompt, context, contextVida, priorities, prioritiesVida } = req.body;
-    const data = loadData();
+    const data = await loadData();
     
     const systemPrompt = `Sos GUS, el asistente personal e inteligente de Gabriel. Respondés desde la web app de forma clara y útil.
 
@@ -105,7 +136,7 @@ app.get('/api/trello/daily-summary', async (req, res) => {
 
 // ── WhatsApp Agent ────────────────────────────────────────────────
 app.post('/whatsapp', async (req, res) => {
-  const data = loadData();
+  const data = await loadData();
   let message = req.body.Body?.trim() || '';
   let reply   = '';
 
@@ -399,7 +430,7 @@ async function sendWhatsApp(text) {
 
 // 7:00 AM ART (10:00 UTC)
 cron.schedule('0 10 * * *', async () => {
-  const d = loadData();
+  const d = await loadData();
   const msg = await buildBriefing(d, 'morning');
   await sendWhatsApp(msg);
   console.log('[GUS] Briefing matutino enviado');
@@ -407,7 +438,7 @@ cron.schedule('0 10 * * *', async () => {
 
 // 12:00 PM ART (15:00 UTC)
 cron.schedule('0 15 * * 1-5', async () => {
-  const d = loadData();
+  const d = await loadData();
   await sendWhatsApp(`⏰ *Check-in mediodía*\n\n${buildFinanceSummary(d)}`);
   console.log('[GUS] Check-in mediodía enviado');
 });
