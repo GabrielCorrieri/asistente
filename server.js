@@ -350,14 +350,46 @@ Si no podés identificar, poné eventIndex: -1`;
     }
   }
 
+  // Detect free slots intent
+  const freeKeywords = ['espacio libre','tiempo libre','cuándo puedo','cuándo tengo','hueco','disponible','cuando tengo'];
+  const isFreeIntent = freeKeywords.some(k => msg.includes(k));
+  if (isFreeIntent) {
+    const slots = await getFreeSlots();
+    if (!slots.length) return '📅 No tenés espacios libres hoy. Agenda llena.';
+    return '🕐 *Espacios libres hoy:*\n' + slots.map(s=>`• ${s.start} - ${s.end} (${s.mins >= 60 ? Math.floor(s.mins/60)+'hs' : s.mins+'min'})`).join('\n');
+  }
+
+  // Detect delete intent
+  const deleteKeywords = ['borrá','eliminá','cancelá','borra','elimina','cancela'];
+  const isDeleteIntent = deleteKeywords.some(k => msg.includes(k)) && (msg.includes('evento') || msg.includes('reunión') || msg.includes('cita'));
+  if (isDeleteIntent) {
+    const events = [...await getEventsToday(), ...await getEventsWeek()];
+    if (!events.length) return '📅 No encontré eventos para eliminar.';
+    const evList = events.slice(0,8).map((e,i)=>`${i+1}. ${e.summary} - ${new Date(e.start?.dateTime||e.start?.date).toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}`).join('\n');
+    const delPrompt = `El usuario quiere eliminar un evento: "${message}"\nEventos: ${evList}\nSOLO JSON: {"eventIndex": 0} o {"eventIndex": -1} si no encontrás`;
+    try {
+      const dr = await ai.messages.create({model:'claude-sonnet-4-5',max_tokens:100,messages:[{role:'user',content:delPrompt}]});
+      const dData = JSON.parse(dr.content[0].text.replace(/\`\`\`json|\`\`\`/g,'').trim());
+      if (dData.eventIndex >= 0 && events[dData.eventIndex]) {
+        const ev = events[dData.eventIndex];
+        const cal = await getCalendarClient();
+        if (cal) {
+          await cal.events.delete({ calendarId: 'primary', eventId: ev.id });
+          return `🗑 *Evento eliminado:* ${ev.summary}`;
+        }
+      }
+    } catch(e) {}
+    return '⚠️ No pude identificar qué evento eliminar. ¿Podés ser más específico?';
+  }
+
   // Detect calendar read intent
-  const readKeywords = ['agenda','calendario','eventos','reuniones','qué tengo','tengo hoy','tengo mañana','semana'];
-  const isReadIntent = readKeywords.some(k => msg.includes(k)) && !isCreateIntent;
+  const readKeywords = ['agenda','calendario','eventos','reuniones','qué tengo','tengo hoy','tengo mañana','semana','mis eventos'];
+  const isReadIntent = readKeywords.some(k => msg.includes(k)) && !isCreateIntent && !isRescheduleIntent;
   if (isReadIntent) {
     const events = msg.includes('semana') ? await getEventsWeek() : await getEventsToday();
     if (!events.length) return '📅 No tenés eventos ' + (msg.includes('semana') ? 'esta semana' : 'hoy') + '.';
     const title = msg.includes('semana') ? '📅 *Tu semana:*' : '📅 *Agenda de hoy:*';
-    return title + '\n' + events.map(fmtEvent).join('\n');
+    return title + '\n' + events.map(e => fmtEvent(e) + (e.calendarName && e.calendarName !== 'primary' ? ` _(${e.calendarName})_` : '')).join('\n');
   }
 
 
@@ -569,40 +601,100 @@ function escapeXml(s) {
 
 
 // ── Calendar helpers ──────────────────────────────────────────────
-async function getEventsToday() {
+async function getAllCalendars() {
   const cal = await getCalendarClient();
   if (!cal) return [];
-  const now = new Date();
-  const start = new Date(now); start.setHours(0,0,0,0);
-  const end   = new Date(now); end.setHours(23,59,59,999);
   try {
-    const res = await cal.events.list({
-      calendarId: 'primary',
-      timeMin: start.toISOString(),
-      timeMax: end.toISOString(),
-      singleEvents: true,
-      orderBy: 'startTime',
-      maxResults: 20
-    });
+    const res = await cal.calendarList.list();
     return res.data.items || [];
   } catch(e) { return []; }
 }
 
+async function getEventsFromAllCalendars(timeMin, timeMax, maxResults=30) {
+  const cal = await getCalendarClient();
+  if (!cal) return [];
+  try {
+    const calendars = await getAllCalendars();
+    const allEvents = await Promise.all(
+      calendars.map(async (c) => {
+        try {
+          const res = await cal.events.list({
+            calendarId: c.id,
+            timeMin, timeMax,
+            singleEvents: true,
+            orderBy: 'startTime',
+            maxResults: maxResults
+          });
+          return (res.data.items || []).map(ev => ({
+            ...ev,
+            calendarName: c.summary,
+            calendarColor: c.backgroundColor || '#4285F4'
+          }));
+        } catch(e) { return []; }
+      })
+    );
+    // Merge and sort by start time
+    return allEvents.flat().sort((a,b) => {
+      const aT = new Date(a.start?.dateTime||a.start?.date).getTime();
+      const bT = new Date(b.start?.dateTime||b.start?.date).getTime();
+      return aT - bT;
+    });
+  } catch(e) { return []; }
+}
+
+async function getEventsToday() {
+  const now = new Date();
+  const start = new Date(now.toLocaleDateString('en-US',{timeZone:'America/Argentina/Buenos_Aires'}) + ' 00:00:00');
+  const end   = new Date(now.toLocaleDateString('en-US',{timeZone:'America/Argentina/Buenos_Aires'}) + ' 23:59:59');
+  return getEventsFromAllCalendars(start.toISOString(), end.toISOString(), 20);
+}
+
 async function getEventsWeek() {
+  const now = new Date();
+  const end = new Date(now); end.setDate(end.getDate() + 7);
+  return getEventsFromAllCalendars(now.toISOString(), end.toISOString(), 40);
+}
+
+async function getFreeSlots() {
   const cal = await getCalendarClient();
   if (!cal) return [];
   const now = new Date();
-  const end = new Date(now); end.setDate(end.getDate() + 7);
+  const end = new Date(now); end.setHours(20,0,0,0);
   try {
-    const res = await cal.events.list({
-      calendarId: 'primary',
-      timeMin: now.toISOString(),
-      timeMax: end.toISOString(),
-      singleEvents: true,
-      orderBy: 'startTime',
-      maxResults: 30
-    });
-    return res.data.items || [];
+    const events = await getEventsToday();
+    const busy = events
+      .filter(e => e.start?.dateTime)
+      .map(e => ({
+        start: new Date(e.start.dateTime).getTime(),
+        end:   new Date(e.end.dateTime).getTime(),
+        title: e.summary
+      }));
+    
+    const slots = [];
+    let cursor = Math.max(now.getTime(), new Date().setHours(8,0,0,0));
+    const endOfDay = new Date().setHours(20,0,0,0);
+    
+    for (const b of busy) {
+      if (cursor + 30*60000 <= b.start) {
+        const slotMins = Math.floor((b.start - cursor) / 60000);
+        if (slotMins >= 30) {
+          slots.push({
+            start: new Date(cursor).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}),
+            end:   new Date(b.start).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}),
+            mins:  slotMins
+          });
+        }
+      }
+      cursor = Math.max(cursor, b.end);
+    }
+    if (cursor + 30*60000 <= endOfDay) {
+      slots.push({
+        start: new Date(cursor).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}),
+        end:   '20:00',
+        mins:  Math.floor((endOfDay - cursor) / 60000)
+      });
+    }
+    return slots;
   } catch(e) { return []; }
 }
 
@@ -697,7 +789,12 @@ function fmtEvent(ev) {
   return `${time ? time + ' — ' : ''}*${ev.summary}*${loc}${meet}`;
 }
 
-// Calendar endpoint for web app
+// Calendar endpoints for web app
+app.get('/api/calendar/calendars', async (req, res) => {
+  const calendars = await getAllCalendars();
+  res.json({ calendars });
+});
+
 app.get('/api/calendar/today', async (req, res) => {
   const events = await getEventsToday();
   res.json({ events });
@@ -728,7 +825,8 @@ async function sendWhatsApp(text) {
 }
 
 
-// ── 30-min event reminders ────────────────────────────────────────
+// ── Event reminders (30min + 10min prep) ─────────────────────────
+const sentReminders = new Set();
 setInterval(async () => {
   try {
     const events = await getEventsToday();
@@ -738,16 +836,41 @@ setInterval(async () => {
       if (!start) continue;
       const startMs = new Date(start).getTime();
       const diff = startMs - now;
-      // Between 29 and 31 minutes away
-      if (diff > 29 * 60000 && diff < 31 * 60000) {
-        const data = await loadData();
-        const time = new Date(start).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-        const msg = `⏰ *En 30 minutos:* ${ev.summary} a las ${time}${ev.location ? ' en ' + ev.location : ''}${ev.hangoutLink ? '\n📹 ' + ev.hangoutLink : ''}`;
+      const time = new Date(start).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'});
+
+      // 30-min reminder
+      const key30 = `30-${ev.id}`;
+      if (diff > 29*60000 && diff < 31*60000 && !sentReminders.has(key30)) {
+        sentReminders.add(key30);
+        let msg = `⏰ *En 30 minutos:* ${ev.summary} a las ${time}`;
+        if (ev.location) msg += `\n📍 ${ev.location}`;
+        if (ev.hangoutLink) msg += `\n📹 ${ev.hangoutLink}`;
         await sendWhatsApp(msg);
       }
+
+      // 10-min prep brief
+      const key10 = `10-${ev.id}`;
+      if (diff > 9*60000 && diff < 11*60000 && !sentReminders.has(key10)) {
+        sentReminders.add(key10);
+        const data = await loadData();
+        const prepPrompt = `Generá una preparación brevísima para esta reunión de ${data.context?.slice(0,300)||'un emprendedor argentino'}.
+Evento: ${ev.summary}
+Hora: ${time}
+Descripción: ${ev.description||'sin descripción'}
+${ev.location?'Lugar: '+ev.location:''}
+
+En máximo 3 líneas para WhatsApp: qué recordar, qué querés lograr, qué preguntar. Formato *negrita* de WhatsApp.`;
+        try {
+          const r = await ai.messages.create({model:'claude-sonnet-4-5',max_tokens:200,messages:[{role:'user',content:prepPrompt}]});
+          const prep = r.content[0]?.text || '';
+          await sendWhatsApp(`🧠 *Preparación — ${ev.summary} en 10 min:*\n${prep}`);
+        } catch(e) {
+          await sendWhatsApp(`🧠 *En 10 min:* ${ev.summary} a las ${time}${ev.hangoutLink?'\n📹 '+ev.hangoutLink:''}`);
+        }
+      }
     }
-  } catch(e) {}
-}, 60000); // Check every minute
+  } catch(e) { console.error('Reminder error:', e.message); }
+}, 60000);
 
 // 7:00 AM ART (10:00 UTC)
 cron.schedule('0 10 * * *', async () => {
