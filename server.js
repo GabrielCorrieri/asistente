@@ -229,16 +229,15 @@ app.post('/whatsapp', async (req, res) => {
         // Transcribe with Whisper using form-data package
         console.log('Sending to Whisper, buffer size:', audioBuffer.byteLength);
         const FormData = require('form-data');
+        const axios = require('axios');
         const form = new FormData();
         form.append('file', Buffer.from(audioBuffer), { filename: 'audio.ogg', contentType: 'audio/ogg' });
         form.append('model', 'whisper-1');
         form.append('language', 'es');
-        const wRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, ...form.getHeaders() },
-          body: form
+        const wResp = await axios.post('https://api.openai.com/v1/audio/transcriptions', form, {
+          headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, ...form.getHeaders() }
         });
-        const wData = await wRes.json();
+        const wData = wResp.data;
         console.log('Whisper result:', JSON.stringify(wData).slice(0,150));
         message = wData.text || '';
         if (message) {
