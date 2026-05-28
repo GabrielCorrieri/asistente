@@ -233,7 +233,29 @@ async function loadBoard(id){
   const d=await api(`/api/trello/cards?key=${CFG.trelloKey}&token=${CFG.trelloToken}&boardId=${id}`);
   if(d&&!d.error){TRELLO_DATA=d;CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));}
 }
-async function selectBoard(id){CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));await loadBoard(id);renderLab();}
+async function selectBoard(id){
+  CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));
+  await loadBoard(id);
+  const el=document.getElementById('trello-spinner');
+  if(el) el.outerHTML=getTrelloHTML();
+}
+function getTrelloHTML(){
+  if(!CFG.trelloKey) return `<div class="ibox warn">Conectá Trello en <strong>Ajustes</strong>.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px">Ir →</button></div>`;
+  if(TRELLO_LOADING||!TRELLO_DATA.cards) return `<div id="trello-spinner" style="text-align:center;padding:2rem;color:var(--ink4)"><span class="spin">◌</span> Cargando...</div>`;
+  const byList={};
+  (TRELLO_DATA.lists||[]).forEach(l=>byList[l.id]={name:l.name,cards:[]});
+  (TRELLO_DATA.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{if(byList[c.idList])byList[c.idList].cards.push(c);});
+  const ab=TRELLO_BOARDS.find(b=>b.id===CFG.activeBoardId);
+  return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500">📌 ${ab?.name||'Tablero'}</p>
+    <select onchange="selectBoard(this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 8px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}" ${b.id===CFG.activeBoardId?'selected':''}>${b.name}</option>`).join('')}</select>
+  </div>
+  ${Object.values(byList).filter(l=>l.cards.length).map(l=>`
+    <div style="margin-bottom:14px">
+      <p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink4);margin-bottom:6px;font-weight:500">${l.name}</p>
+      ${l.cards.slice(0,10).map(c=>`<div class="tcard">${c.name}${c.due?`<span style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace">${fmtDate(c.due)}</span>`:''}</div>`).join('')}
+    </div>`).join('')||`<div class="empty">Sin tarjetas activas</div>`}`;
+}
 
 /* ── HELPERS ── */
 function alerts(){
@@ -622,31 +644,11 @@ async function renderLab(){
     }
   }
     else if(LAB_SUB==='trello'){
-    // Trigger load once if needed
+    // Fire-and-forget load if needed - will update spinner div when done
     if(CFG.trelloKey && CFG.trelloToken && !TRELLO_DATA.cards && !TRELLO_LOADING) {
       loadTrello();
     }
-    if(!CFG.trelloKey){
-      content=`<div class="ibox warn">Conectá Trello en <strong>Ajustes</strong> para ver tus tableros.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px">Ir →</button></div>`;
-    }else if(TRELLO_LOADING){
-      content=`<div style="text-align:center;padding:2rem"><span class="spin" style="color:var(--ink3)">◌</span></div>`;
-    }else if(TRELLO_DATA.cards){
-      const byList={};
-      (TRELLO_DATA.lists||[]).forEach(l=>byList[l.id]={name:l.name,cards:[]});
-      (TRELLO_DATA.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{if(byList[c.idList])byList[c.idList].cards.push(c);});
-      const ab=TRELLO_BOARDS.find(b=>b.id===CFG.activeBoardId);
-      content=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500">📌 ${ab?.name||'Tablero'}</p>
-        <select onchange="selectBoard(this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 8px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}" ${b.id===CFG.activeBoardId?'selected':''}>${b.name}</option>`).join('')}</select>
-      </div>
-      ${Object.values(byList).filter(l=>l.cards.length).map(l=>`
-        <div style="margin-bottom:14px">
-          <p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink4);margin-bottom:6px;font-weight:500">${l.name}</p>
-          ${l.cards.slice(0,10).map(c=>`<div class="tcard">${c.name}${c.due?`<span style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace">${fmtDate(c.due)}</span>`:''}</div>`).join('')}
-        </div>`).join('')||`<div class="empty">Sin tarjetas activas</div>`}`;
-    }else{
-      content=`<div style="text-align:center;padding:2rem;color:var(--ink4);font-size:13px"><span class="spin">◌</span> Conectando...</div>`;
-    }
+    content = getTrelloHTML();
   }
 
   document.getElementById('view-lab').innerHTML=`
