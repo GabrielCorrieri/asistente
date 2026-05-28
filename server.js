@@ -287,6 +287,52 @@ es
 async function agentReply(message, data) {
   const msg = message.toLowerCase();
 
+  // Detect calendar reschedule intent
+  const rescheduleKeywords = ['reprogramá','reprogramame','mové','mové','cambiá','cambiar hora','cambiar fecha','pasá para','postergar','adelantar'];
+  const isRescheduleIntent = rescheduleKeywords.some(k => msg.includes(k));
+  if (isRescheduleIntent) {
+    // Get today's events to find the one to reschedule
+    const events = await getEventsToday();
+    const weekEvents = await getEventsWeek();
+    const allEvents = [...events, ...weekEvents];
+    if (!allEvents.length) return '📅 No encontré eventos para reprogramar. ¿Podés ser más específico sobre cuál evento?';
+    
+    // Use AI to identify which event and new time
+    const evList = allEvents.map((e,i)=>`${i+1}. ${e.summary} - ${new Date(e.start?.dateTime||e.start?.date).toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'})}`).join('\n');
+    const reschedulePrompt = `El usuario quiere reprogramar un evento: "${message}"
+    
+Eventos disponibles:
+${evList}
+
+Fecha/hora actual en Argentina: ${arNow.toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'})}
+
+Identificá cuál evento reprogramar y la nueva hora. SOLO JSON:
+{"eventIndex": 0, "newStartDateTime": "${todayISO}T11:00:00-03:00", "newEndDateTime": "${todayISO}T12:00:00-03:00"}
+Si no podés identificar, poné eventIndex: -1`;
+
+    try {
+      const rr = await ai.messages.create({ model:'claude-sonnet-4-5', max_tokens:200, messages:[{role:'user',content:reschedulePrompt}] });
+      const rData = JSON.parse(rr.content[0].text.replace(/\`\`\`json|\`\`\`/g,'').trim());
+      if (rData.eventIndex >= 0 && allEvents[rData.eventIndex]) {
+        const ev = allEvents[rData.eventIndex];
+        const cal = await getCalendarClient();
+        if (cal) {
+          await cal.events.patch({
+            calendarId: 'primary',
+            eventId: ev.id,
+            resource: {
+              start: { dateTime: rData.newStartDateTime, timeZone: 'America/Argentina/Buenos_Aires' },
+              end:   { dateTime: rData.newEndDateTime,   timeZone: 'America/Argentina/Buenos_Aires' }
+            }
+          });
+          const newTime = new Date(rData.newStartDateTime).toLocaleString('es-AR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'});
+          return `✅ *Reprogramado:* ${ev.summary}\n📅 ${newTime}`;
+        }
+      }
+    } catch(e) { console.error('Reschedule error:', e.message); }
+    return '⚠️ No pude identificar el evento. ¿Podés decirme el nombre exacto y la nueva hora?';
+  }
+
   // Detect calendar create intent
   const createKeywords = ['agendá','agenda','anotá','agendame','creá','crear reunión','nueva reunión','agendame','recordame','agendá','schedulea','añadí','añadime'];
   const isCreateIntent = createKeywords.some(k => msg.includes(k));
@@ -294,7 +340,7 @@ async function agentReply(message, data) {
     const event = await parseAndCreateEvent(message, data);
     if (event) {
       const start = event.start?.dateTime || event.start?.date;
-      const time = start ? new Date(start).toLocaleString('es-AR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '';
+      const time = start ? new Date(start).toLocaleString('es-AR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}) : '';
       let reply = `✅ *Evento creado:* ${event.summary}\n📅 ${time}`;
       if (event.location) reply += `\n📍 ${event.location}`;
       if (event.hangoutLink) reply += `\n📹 Meet: ${event.hangoutLink}`;
@@ -576,13 +622,24 @@ async function createEvent(eventData) {
 async function parseAndCreateEvent(message, data) {
   // Use AI to extract event details from natural language
   const now = new Date();
-  const tzOffset = '-03:00'; // Argentina timezone
-  const todayStr = now.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  // Get current time in Argentina (UTC-3)
+  const arNow = new Date(now.toLocaleString('en-US', {timeZone: 'America/Argentina/Buenos_Aires'}));
+  const arDate = arNow.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'America/Argentina/Buenos_Aires'});
+  const arTime = arNow.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit', timeZone:'America/Argentina/Buenos_Aires'});
+  // Build today's date string in AR timezone for ISO format
+  const arYear  = arNow.getFullYear();
+  const arMonth = String(arNow.getMonth()+1).padStart(2,'0');
+  const arDay   = String(arNow.getDate()).padStart(2,'0');
+  const todayISO = `${arYear}-${arMonth}-${arDay}`;
   const prompt = `Extraé los detalles del evento de este mensaje en español: "${message}"
 
-Fecha y hora EXACTA actual en Argentina: ${now.toLocaleString('es-AR')} (UTC-3)
-Hoy es: ${todayStr}
-IMPORTANTE: Usá siempre el offset -03:00 para Argentina. Si dicen "11hs" es 11:00:00-03:00, NO convertir a UTC.
+Fecha actual en Argentina: ${arDate}
+Hora actual en Argentina: ${arTime}
+Fecha de hoy en formato ISO: ${todayISO}
+CRÍTICO: El servidor corre en UTC. Vos SIEMPRE debés usar -03:00 como offset.
+Ejemplo correcto para "11hs hoy": "${todayISO}T11:00:00-03:00"
+Ejemplo correcto para "mañana a las 15hs": "${arYear}-${arMonth}-${String(arNow.getDate()+1).padStart(2,'0')}T15:00:00-03:00"
+NUNCA uses UTC (Z) ni otros offsets. SIEMPRE -03:00.
 
 Respondé SOLO JSON sin markdown:
 {
@@ -634,7 +691,7 @@ Reglas:
 
 function fmtEvent(ev) {
   const start = ev.start?.dateTime || ev.start?.date || '';
-  const time = start ? new Date(start).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
+  const time = start ? new Date(start).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}) : '';
   const meet = ev.hangoutLink ? ` 📹 ${ev.hangoutLink}` : '';
   const loc = ev.location ? ` 📍 ${ev.location}` : '';
   return `${time ? time + ' — ' : ''}*${ev.summary}*${loc}${meet}`;
