@@ -226,48 +226,23 @@ app.post('/whatsapp', async (req, res) => {
       const audioBuffer = await audioRes.arrayBuffer();
 
       if (process.env.OPENAI_API_KEY) {
-        // Transcribe with Whisper
-        const { default: FormData } = await import('formdata-node');
-        const { FormDataEncoder } = await import('form-data-encoder');
-        const { Readable } = require('stream');
-
-        // Use node-fetch compatible approach
-        const fetch2 = fetch;
-        const boundary = '----FormBoundary' + Math.random().toString(36);
-        const body2 = Buffer.concat([
-          Buffer.from(`--${boundary}
-Content-Disposition: form-data; name="file"; filename="audio.ogg"
-Content-Type: audio/ogg
-
-`),
-          Buffer.from(audioBuffer),
-          Buffer.from(`
---${boundary}
-Content-Disposition: form-data; name="model"
-
-whisper-1
---${boundary}
-Content-Disposition: form-data; name="language"
-
-es
---${boundary}--
-`)
-        ]);
-
-        const wRes = await fetch2('https://api.openai.com/v1/audio/transcriptions', {
+        // Transcribe with Whisper using form-data package
+        console.log('Sending to Whisper, buffer size:', audioBuffer.byteLength);
+        const FormData = require('form-data');
+        const form = new FormData();
+        form.append('file', Buffer.from(audioBuffer), { filename: 'audio.ogg', contentType: 'audio/ogg' });
+        form.append('model', 'whisper-1');
+        form.append('language', 'es');
+        const wRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-            'Content-Type': `multipart/form-data; boundary=${boundary}`,
-            'Content-Length': body2.length
-          },
-          body: body2
+          headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, ...form.getHeaders() },
+          body: form
         });
         const wData = await wRes.json();
+        console.log('Whisper result:', JSON.stringify(wData).slice(0,150));
         message = wData.text || '';
-
         if (message) {
-          reply = await agentReply(`[Audio transcripto]: ${message}`, data);
+          reply = await agentReply(`[Audio transcripto - respondé naturalmente sin mencionar que es audio]: ${message}`, data);
         } else {
           reply = '⚠️ No pude entender el audio. ¿Podés escribirme?';
         }
