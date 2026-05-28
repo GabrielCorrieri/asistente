@@ -208,7 +208,7 @@ async function setMode(m){
 
 /* ── NAV ── */
 function go(t){TAB=t;FIN_FORM=null;['hoy','lab','vida','finanzas','contexto','settings'].forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.style.display=v===t?'block':'none';});render();}
-async function goLabSub(s){LAB_SUB=s;await renderLab();}
+async function goLabSub(s){LAB_SUB=s;await renderLab();if(s==='trello'&&TRELLO_DATA.cards)paintTrello();else if(s==='trello'&&CFG.trelloKey&&!TRELLO_LOADING)loadTrello();}
 function goVidaSub(s){VIDA_SUB=s;renderVida();}
 
 /* ── API ── */
