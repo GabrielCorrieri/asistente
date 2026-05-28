@@ -222,40 +222,40 @@ async function save(silent=false){
 /* ── TRELLO ── */
 async function loadTrello(){
   if(!CFG.trelloKey||!CFG.trelloToken)return;
-  TRELLO_LOADING=true;
-  const b=await api(`/api/trello/boards?key=${CFG.trelloKey}&token=${CFG.trelloToken}`);
-  if(b&&!b.error)TRELLO_BOARDS=b;
-  if(CFG.activeBoardId)await loadBoard(CFG.activeBoardId);
+  TRELLO_LOADING=true; TRELLO_DATA={}; TRELLO_BOARDS=[];
+  try{
+    const b=await fetch(`/api/trello/boards?key=${CFG.trelloKey}&token=${CFG.trelloToken}`).then(r=>r.json());
+    if(Array.isArray(b))TRELLO_BOARDS=b;
+    const bid=CFG.activeBoardId||TRELLO_BOARDS[0]?.id;
+    if(bid){
+      const d=await fetch(`/api/trello/cards?key=${CFG.trelloKey}&token=${CFG.trelloToken}&boardId=${bid}`).then(r=>r.json());
+      if(d&&d.cards){TRELLO_DATA=d;CFG.activeBoardId=bid;localStorage.setItem('gus_cfg',JSON.stringify(CFG));}
+    }
+  }catch(e){console.error('Trello:',e);}
   TRELLO_LOADING=false;
-  if(TAB==='lab')await renderLab();
-}
-async function loadBoard(id){
-  const d=await api(`/api/trello/cards?key=${CFG.trelloKey}&token=${CFG.trelloToken}&boardId=${id}`);
-  if(d&&!d.error){TRELLO_DATA=d;CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));}
+  paintTrello();
 }
 async function selectBoard(id){
   CFG.activeBoardId=id;localStorage.setItem('gus_cfg',JSON.stringify(CFG));
-  await loadBoard(id);
-  const el=document.getElementById('trello-spinner');
-  if(el) el.outerHTML=getTrelloHTML();
+  TRELLO_LOADING=true;TRELLO_DATA={};paintTrello();
+  try{
+    const d=await fetch(`/api/trello/cards?key=${CFG.trelloKey}&token=${CFG.trelloToken}&boardId=${id}`).then(r=>r.json());
+    if(d&&d.cards)TRELLO_DATA=d;
+  }catch(e){}
+  TRELLO_LOADING=false;paintTrello();
 }
-function getTrelloHTML(){
-  if(!CFG.trelloKey) return `<div class="ibox warn">Conectá Trello en <strong>Ajustes</strong>.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px">Ir →</button></div>`;
-  if(TRELLO_LOADING||!TRELLO_DATA.cards) return `<div id="trello-spinner" style="text-align:center;padding:2rem;color:var(--ink4)"><span class="spin">◌</span> Cargando...</div>`;
+function paintTrello(){
+  const el=document.getElementById('trello-paint');
+  if(!el)return;
+  if(TRELLO_LOADING){el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink4)"><span class="spin">◌</span> Cargando...</div>';return;}
+  if(!TRELLO_DATA.cards){el.innerHTML='<div class="empty">Sin datos</div>';return;}
   const byList={};
-  (TRELLO_DATA.lists||[]).forEach(l=>byList[l.id]={name:l.name,cards:[]});
+  (TRELLO_DATA.lists||[]).forEach(l=>{byList[l.id]={name:l.name,cards:[]};});
   (TRELLO_DATA.cards||[]).filter(c=>!c.dueComplete).forEach(c=>{if(byList[c.idList])byList[c.idList].cards.push(c);});
   const ab=TRELLO_BOARDS.find(b=>b.id===CFG.activeBoardId);
-  return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500">📌 ${ab?.name||'Tablero'}</p>
-    <select onchange="selectBoard(this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 8px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}" ${b.id===CFG.activeBoardId?'selected':''}>${b.name}</option>`).join('')}</select>
-  </div>
-  ${Object.values(byList).filter(l=>l.cards.length).map(l=>`
-    <div style="margin-bottom:14px">
-      <p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink4);margin-bottom:6px;font-weight:500">${l.name}</p>
-      ${l.cards.slice(0,10).map(c=>`<div class="tcard">${c.name}${c.due?`<span style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace">${fmtDate(c.due)}</span>`:''}</div>`).join('')}
-    </div>`).join('')||`<div class="empty">Sin tarjetas activas</div>`}`;
+  el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><p style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);font-weight:500">📌 ${ab?.name||'Tablero'}</p><select onchange="selectBoard(this.value)" style="width:auto;font-size:12px;padding:4px 28px 4px 8px">${TRELLO_BOARDS.map(b=>`<option value="${b.id}"${b.id===CFG.activeBoardId?' selected':''}>${b.name}</option>`).join('')}</select></div>${Object.values(byList).filter(l=>l.cards.length).map(l=>`<div style="margin-bottom:14px"><p style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink4);margin-bottom:6px;font-weight:500">${l.name}</p>${l.cards.slice(0,10).map(c=>`<div class="tcard">${c.name}${c.due?`<span style="font-size:11px;color:var(--amber)">${fmtDate(c.due)}</span>`:''}</div>`).join('')}</div>`).join('')||'<div class="empty">Sin tarjetas activas</div>'}`;
 }
+function getTrelloHTML(){return "";}
 
 /* ── HELPERS ── */
 function alerts(){
@@ -644,11 +644,7 @@ async function renderLab(){
     }
   }
     else if(LAB_SUB==='trello'){
-    // Fire-and-forget load if needed - will update spinner div when done
-    if(CFG.trelloKey && CFG.trelloToken && !TRELLO_DATA.cards && !TRELLO_LOADING) {
-      loadTrello();
-    }
-    content = getTrelloHTML();
+    content=`<div id="trello-paint"><div style="text-align:center;padding:2rem;color:var(--ink4)"><span class="spin">◌</span> Cargando...</div></div>`;
   }
 
   document.getElementById('view-lab').innerHTML=`
