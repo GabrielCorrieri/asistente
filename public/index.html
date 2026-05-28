@@ -653,6 +653,7 @@ async function renderLab(){
       <div class="sh"><div class="sh-l"><div class="icon" style="background:var(--blue-s);color:var(--blue)">◈</div><span style="color:var(--blue)">${subs.find(s=>s.id===LAB_SUB)?.label||''}</span></div></div>
       ${content}
     </div>`;
+  if(LAB_SUB==='trello') setTimeout(()=>{if(TRELLO_DATA.cards)paintTrello();else if(CFG.trelloKey&&!TRELLO_LOADING)loadTrello();},0);
 }
 
 /* ── VIDA ── */
