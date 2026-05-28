@@ -207,9 +207,13 @@ app.post('/whatsapp', async (req, res) => {
   let message = req.body.Body?.trim() || '';
   let reply   = '';
 
+  // Log incoming for debugging
+  console.log('WA incoming - NumMedia:', req.body.NumMedia, 'ContentType:', req.body.MediaContentType0, 'Body:', message?.slice(0,50));
+
   // Handle voice/audio messages
   const numMedia = parseInt(req.body.NumMedia || '0');
-  if (numMedia > 0 && req.body.MediaContentType0?.includes('audio')) {
+  const contentType = req.body.MediaContentType0 || '';
+  if (numMedia > 0 && (contentType.includes('audio') || contentType.includes('ogg') || contentType.includes('mpeg'))) {
     try {
       const audioUrl = req.body.MediaUrl0;
       const sid  = process.env.TWILIO_ACCOUNT_SID;
