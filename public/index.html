@@ -624,7 +624,10 @@ async function renderLab(){
     else if(LAB_SUB==='trello'){
     // Auto-refresh Trello if we have credentials but no data
     if(CFG.trelloKey && CFG.trelloToken && !TRELLO_DATA.cards && !TRELLO_LOADING) {
+      TRELLO_LOADING=true;
+      document.getElementById('view-lab').innerHTML='<div class="pills">'+Object.entries({tareas:'Tareas',proyectos:'Proyectos',calendario:'Calendario',reuniones:'Reuniones',recordatorios:'Recordatorios',trello:'Trello'}).map(([k,v])=>`<button class="pill ${LAB_SUB===k?'on':''}" onclick="goLabSub('${k}')" style="${LAB_SUB===k?'background:var(--blue);border-color:var(--blue);color:#fff':''}">${v}</button>`).join('')+'</div><div class="card"><div class="sh"><div class="sh-l"><div class="icon" style="background:var(--blue-s);color:var(--blue)">◈</div><span style="color:var(--blue)">Trello</span></div></div><div style="text-align:center;padding:2rem;color:var(--ink4)"><span class="spin">◌</span> Cargando tableros...</div></div>';
       await loadTrello();
+      return;
     }
     if(!CFG.trelloKey){
       content=`<div class="ibox warn">Conectá Trello en <strong>Ajustes</strong> para ver tus tableros.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px">Ir →</button></div>`;
