@@ -575,23 +575,32 @@ async function createEvent(eventData) {
 
 async function parseAndCreateEvent(message, data) {
   // Use AI to extract event details from natural language
+  const now = new Date();
+  const tzOffset = '-03:00'; // Argentina timezone
+  const todayStr = now.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
   const prompt = `Extraé los detalles del evento de este mensaje en español: "${message}"
 
-Contexto del usuario: ${(data.context||'').slice(0,300)}
-Fecha y hora actual: ${new Date().toLocaleString('es-AR')}
+Fecha y hora EXACTA actual en Argentina: ${now.toLocaleString('es-AR')} (UTC-3)
+Hoy es: ${todayStr}
+IMPORTANTE: Usá siempre el offset -03:00 para Argentina. Si dicen "11hs" es 11:00:00-03:00, NO convertir a UTC.
 
 Respondé SOLO JSON sin markdown:
 {
   "summary": "título del evento",
-  "startDateTime": "2026-05-27T15:00:00-03:00",
-  "endDateTime": "2026-05-27T16:00:00-03:00",
-  "description": "descripción opcional",
+  "startDateTime": "2026-05-29T11:00:00-03:00",
+  "endDateTime": "2026-05-29T12:00:00-03:00",
+  "description": "descripción opcional o null",
   "location": "ubicación opcional o null",
-  "addMeet": true/false,
-  "attendees": ["email1@gmail.com"] o []
+  "addMeet": false,
+  "attendees": []
 }
 
-Si no podés extraer fecha/hora concreta, poné null en startDateTime.`;
+Reglas:
+- SIEMPRE incluí -03:00 al final de las fechas
+- Si dicen "11hs" → T11:00:00-03:00
+- Si dicen "11am" → T11:00:00-03:00  
+- Si no se especifica duración, poné 1 hora
+- Si no podés extraer fecha concreta, poné null en startDateTime`;
 
   try {
     const r = await ai.messages.create({
