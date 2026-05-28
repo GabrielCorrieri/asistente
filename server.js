@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path    = require('path');
 const fs      = require('fs');
-const cron    = require('node-cron');
+// const cron = require('node-cron'); // PAUSADO - activar en producción
 const Anthropic = require('@anthropic-ai/sdk');
 const { Pool } = require('pg');
 
@@ -805,7 +805,7 @@ async function sendWhatsApp(text) {
 
 // ── Event reminders (30min + 10min prep) ─────────────────────────
 const sentReminders = new Set();
-setInterval(async () => {
+/* PAUSADO - setInterval(async () => {
   try {
     const events = await getEventsToday();
     const now = Date.now();
@@ -850,27 +850,14 @@ En máximo 3 líneas para WhatsApp: qué recordar, qué querés lograr, qué pre
   } catch(e) { console.error('Reminder error:', e.message); }
 }, 60000);
 
+// CRON JOBS PAUSADOS - activar cuando GUS esté en uso real
 // 7:00 AM ART (10:00 UTC)
-cron.schedule('0 10 * * *', async () => {
-  const d = await loadData();
-  const msg = await buildBriefing(d, 'morning');
-  await sendWhatsApp(msg);
-  console.log('[GUS] Briefing matutino enviado');
-});
+/* CRON PAUSADO */
 
 // 12:00 PM ART (15:00 UTC)
-cron.schedule('0 15 * * 1-5', async () => {
-  const d = await loadData();
-  await sendWhatsApp(`⏰ *Check-in mediodía*\n\n${buildFinanceSummary(d)}`);
-  console.log('[GUS] Check-in mediodía enviado');
-});
+/* CRON PAUSADO */
 
 // 7:00 PM ART (22:00 UTC)
-cron.schedule('0 22 * * 1-5', async () => {
-  const d   = loadData();
-  const msg = await buildBriefing(d, 'evening');
-  await sendWhatsApp('🌆 *Cierre del día*\n\n' + msg);
-  console.log('[GUS] Cierre del día enviado');
-});
+/* CRON PAUSADO */
 
 app.listen(PORT, () => console.log(`✅ GUS corriendo en http://localhost:${PORT}`));
