@@ -622,9 +622,9 @@ async function renderLab(){
     }
   }
     else if(LAB_SUB==='trello'){
-    // Trigger load if needed (non-blocking)
+    // Trigger load once if needed
     if(CFG.trelloKey && CFG.trelloToken && !TRELLO_DATA.cards && !TRELLO_LOADING) {
-      loadTrello(); // fire and forget - renderTrelloContent() will update the div
+      loadTrello();
     }
     if(!CFG.trelloKey){
       content=`<div class="ibox warn">Conectá Trello en <strong>Ajustes</strong> para ver tus tableros.<button onclick="go('settings')" style="margin-left:10px;font-size:11.5px">Ir →</button></div>`;
