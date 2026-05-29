@@ -361,7 +361,7 @@ Si no podés identificar, poné eventIndex: -1`;
   }
 
   // Detect calendar read intent
-  const readKeywords = ['agenda','calendario','eventos','reuniones','qué tengo','tengo hoy','tengo mañana','semana','mis eventos'];
+  const readKeywords = ['mi agenda','ver agenda','calendario','mis eventos','mis reuniones','qué tengo hoy','qué tengo mañana','tengo hoy','tengo mañana','esta semana','próxima semana','reuniones de hoy','reuniones de mañana'];
   const isReadIntent = readKeywords.some(k => msg.includes(k)) && !isCreateIntent && !isRescheduleIntent;
   if (isReadIntent) {
     const events = msg.includes('semana') ? await getEventsWeek() : await getEventsToday();
