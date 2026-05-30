@@ -861,6 +861,11 @@ function renderSettings(){
   const dailyBoards=CFG.dailyBoards||[];
   document.getElementById('view-settings').innerHTML=`
     <div class="card fade">
+      <div class="sh"><div class="sh-l">Cuentas Google</div><span style="font-size:12px;color:var(--ink3)">Calendar · Drive · Gmail</span></div>
+      <p style="color:var(--ink3);font-size:13px;line-height:1.6;margin-bottom:14px">Conectá hasta 4 cuentas. GUS busca en todas simultáneamente.</p>
+      <div id="google-accounts-list"><div style="text-align:center;padding:16px;color:var(--ink4);font-size:13px"><span class="spin">◌</span></div></div>
+    </div>
+    <div class="card">
       <div class="sh"><div class="sh-l">Conexión Trello</div></div>
       <p style="color:var(--ink3);font-size:13px;line-height:1.7;margin-bottom:14px">Obtené tu API Key y Token en <a href="https://trello.com/app-key" target="_blank" style="color:var(--blue)">trello.com/app-key</a></p>
       <div style="margin-bottom:10px"><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em">API Key</label><input id="s-tk" type="text" value="${CFG.trelloKey||''}" placeholder="f93de1e8..."></div>
