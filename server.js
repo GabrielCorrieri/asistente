@@ -35,48 +35,78 @@ async function saveData(d) {
   catch(e) { console.error('saveData:', e.message); }
 }
 
-// ── Google OAuth ──────────────────────────────────────────────────
+// ── Google OAuth (multi-cuenta) ───────────────────────────────────
 const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/calendar',
   'https://www.googleapis.com/auth/drive.readonly',
   'https://www.googleapis.com/auth/gmail.readonly'
 ];
-const REDIRECT_URI = `${process.env.BASE_URL || 'https://asistentepersonal.up.railway.app'}/auth/google/callback`;
+const BASE_URL = process.env.BASE_URL || 'https://asistentepersonal.up.railway.app';
+const MAX_ACCOUNTS = 4;
 
-const oauth2 = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  REDIRECT_URI
-);
+function makeOAuth(accountIdx) {
+  return new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    `${BASE_URL}/auth/google/callback?account=${accountIdx}`
+  );
+}
 
-async function getGoogleClient() {
+async function getGoogleClientFor(accountIdx) {
   const data = await loadData();
-  const tokens = data.googleTokens;
+  const key = accountIdx === 0 ? 'googleTokens' : `googleTokens_${accountIdx}`;
+  const tokens = data[key];
   if (!tokens) return null;
-  oauth2.setCredentials(tokens);
+  const oauth = makeOAuth(accountIdx);
+  oauth.setCredentials(tokens);
   if (tokens.expiry_date && tokens.expiry_date < Date.now() + 60000) {
     try {
-      const { credentials } = await oauth2.refreshAccessToken();
-      oauth2.setCredentials(credentials);
-      data.googleTokens = credentials;
+      const { credentials } = await oauth.refreshAccessToken();
+      oauth.setCredentials(credentials);
+      data[key] = credentials;
       await saveData(data);
     } catch(e) { return null; }
   }
-  return oauth2;
+  return oauth;
 }
 
+async function getAllGoogleClients() {
+  const clients = [];
+  for (let i = 0; i < MAX_ACCOUNTS; i++) {
+    const client = await getGoogleClientFor(i);
+    if (client) clients.push({ client, idx: i });
+  }
+  return clients;
+}
+
+// For backwards compatibility - primary account
+async function getGoogleClient() { return getGoogleClientFor(0); }
+
 app.get('/auth/google', (req, res) => {
-  const url = oauth2.generateAuthUrl({ access_type: 'offline', scope: GOOGLE_SCOPES, prompt: 'consent' });
+  const idx = parseInt(req.query.account || '0');
+  const oauth = makeOAuth(idx);
+  const url = oauth.generateAuthUrl({ access_type: 'offline', scope: GOOGLE_SCOPES, prompt: 'consent' });
   res.redirect(url);
 });
 
 app.get('/auth/google/callback', async (req, res) => {
+  const idx = parseInt(req.query.account || '0');
   try {
-    const { tokens } = await oauth2.getToken(req.query.code);
+    const oauth = makeOAuth(idx);
+    const { tokens } = await oauth.getToken(req.query.code);
     const data = await loadData();
-    data.googleTokens = tokens;
+    const key = idx === 0 ? 'googleTokens' : `googleTokens_${idx}`;
+    data[key] = tokens;
+    // Get account email for display
+    oauth.setCredentials(tokens);
+    try {
+      const gmail = google.gmail({ version: 'v1', auth: oauth });
+      const profile = await gmail.users.getProfile({ userId: 'me' });
+      if (!data.googleAccounts) data.googleAccounts = {};
+      data.googleAccounts[idx] = profile.data.emailAddress;
+    } catch(e) {}
     await saveData(data);
-    res.send('<html><body style="font-family:sans-serif;text-align:center;padding:3rem;background:#F4F2ED"><h2 style="font-family:Georgia,serif">✅ Google conectado</h2><p>Calendar, Drive y Gmail listos. Podés cerrar esta ventana.</p></body></html>');
+    res.send(`<html><body style="font-family:sans-serif;text-align:center;padding:3rem;background:#F4F2ED"><h2 style="font-family:Georgia,serif">✅ Cuenta ${idx+1} conectada</h2><p>Podés cerrar esta ventana.</p></body></html>`);
   } catch(e) {
     res.send('<html><body style="font-family:sans-serif;text-align:center;padding:3rem"><h2>❌ Error</h2><p>' + e.message + '</p></body></html>');
   }
@@ -84,7 +114,24 @@ app.get('/auth/google/callback', async (req, res) => {
 
 app.get('/auth/status', async (req, res) => {
   const data = await loadData();
-  res.json({ connected: !!data.googleTokens });
+  const accounts = [];
+  for (let i = 0; i < MAX_ACCOUNTS; i++) {
+    const key = i === 0 ? 'googleTokens' : `googleTokens_${i}`;
+    if (data[key]) {
+      accounts.push({ idx: i, email: data.googleAccounts?.[i] || `Cuenta ${i+1}` });
+    }
+  }
+  res.json({ connected: accounts.length > 0, accounts });
+});
+
+app.delete('/auth/google/:idx', async (req, res) => {
+  const idx = parseInt(req.params.idx);
+  const data = await loadData();
+  const key = idx === 0 ? 'googleTokens' : `googleTokens_${idx}`;
+  delete data[key];
+  if (data.googleAccounts) delete data.googleAccounts[idx];
+  await saveData(data);
+  res.json({ ok: true });
 });
 
 // ── Calendar helpers ──────────────────────────────────────────────
@@ -95,19 +142,27 @@ async function getCalendar() {
 }
 
 async function getEventsRange(timeMin, timeMax) {
-  const cal = await getCalendar();
-  if (!cal) return [];
-  try {
-    const lists = await cal.calendarList.list();
-    const cals = lists.data.items || [];
-    const all = await Promise.all(cals.map(async c => {
-      try {
-        const r = await cal.events.list({ calendarId: c.id, timeMin, timeMax, singleEvents: true, orderBy: 'startTime', maxResults: 15 });
-        return (r.data.items || []).map(ev => ({ ...ev, calName: c.summary }));
-      } catch { return []; }
-    }));
-    return all.flat().sort((a,b) => new Date(a.start?.dateTime||a.start?.date) - new Date(b.start?.dateTime||b.start?.date));
-  } catch(e) { return []; }
+  const clients = await getAllGoogleClients();
+  if (!clients.length) return [];
+  const allResults = await Promise.all(clients.map(async ({ client }) => {
+    try {
+      const cal = google.calendar({ version: 'v3', auth: client });
+      const lists = await cal.calendarList.list();
+      const cals = lists.data.items || [];
+      const evs = await Promise.all(cals.map(async c => {
+        try {
+          const r = await cal.events.list({ calendarId: c.id, timeMin, timeMax, singleEvents: true, orderBy: 'startTime', maxResults: 15 });
+          return (r.data.items || []).map(ev => ({ ...ev, calName: c.summary }));
+        } catch { return []; }
+      }));
+      return evs.flat();
+    } catch(e) { return []; }
+  }));
+  // Deduplicate by event ID and sort
+  const seen = new Set();
+  return allResults.flat()
+    .filter(ev => { if (seen.has(ev.id)) return false; seen.add(ev.id); return true; })
+    .sort((a,b) => new Date(a.start?.dateTime||a.start?.date) - new Date(b.start?.dateTime||b.start?.date));
 }
 
 function arBounds(offsetDays = 0) {
@@ -184,23 +239,29 @@ async function getFreeSlots() {
 
 // ── Drive helpers ─────────────────────────────────────────────────
 async function getDrive() {
-  const auth = await getGoogleClient();
+  const auth = await getGoogleClient(); // primary account
   if (!auth) return null;
   return google.drive({ version: 'v3', auth });
 }
 
 async function searchDrive(query) {
-  const drive = await getDrive();
-  if (!drive) return [];
-  try {
-    const r = await drive.files.list({
-      q: `name contains '${query.replace(/'/g,"\\'")}' and trashed=false`,
-      fields: 'files(id,name,mimeType,modifiedTime,webViewLink,size)',
-      orderBy: 'modifiedTime desc',
-      pageSize: 10
-    });
-    return r.data.files || [];
-  } catch(e) { console.error('Drive search:', e.message); return []; }
+  const clients = await getAllGoogleClients();
+  if (!clients.length) return [];
+  const results = await Promise.all(clients.map(async ({ client, idx }) => {
+    try {
+      const drive = google.drive({ version: 'v3', auth: client });
+      const r = await drive.files.list({
+        q: `name contains '${query.replace(/'/g,"\'")}' and trashed=false`,
+        fields: 'files(id,name,mimeType,modifiedTime,webViewLink,size)',
+        orderBy: 'modifiedTime desc',
+        pageSize: 8
+      });
+      const data = await loadData();
+      const email = data.googleAccounts?.[idx] || `Cuenta ${idx+1}`;
+      return (r.data.files || []).map(f => ({ ...f, accountEmail: email }));
+    } catch(e) { return []; }
+  }));
+  return results.flat().sort((a,b) => new Date(b.modifiedTime) - new Date(a.modifiedTime));
 }
 
 async function getDriveFileContent(fileId, mimeType) {
@@ -224,17 +285,23 @@ async function getDriveFileContent(fileId, mimeType) {
 }
 
 async function getRecentDriveFiles() {
-  const drive = await getDrive();
-  if (!drive) return [];
-  try {
-    const r = await drive.files.list({
-      q: "trashed=false and 'me' in owners",
-      fields: 'files(id,name,mimeType,modifiedTime,webViewLink)',
-      orderBy: 'modifiedTime desc',
-      pageSize: 8
-    });
-    return r.data.files || [];
-  } catch(e) { return []; }
+  const clients = await getAllGoogleClients();
+  if (!clients.length) return [];
+  const results = await Promise.all(clients.map(async ({ client, idx }) => {
+    try {
+      const drive = google.drive({ version: 'v3', auth: client });
+      const r = await drive.files.list({
+        q: "trashed=false and 'me' in owners",
+        fields: 'files(id,name,mimeType,modifiedTime,webViewLink)',
+        orderBy: 'modifiedTime desc',
+        pageSize: 6
+      });
+      const data = await loadData();
+      const email = data.googleAccounts?.[idx] || `Cuenta ${idx+1}`;
+      return (r.data.files || []).map(f => ({ ...f, accountEmail: email }));
+    } catch(e) { return []; }
+  }));
+  return results.flat().sort((a,b) => new Date(b.modifiedTime) - new Date(a.modifiedTime)).slice(0,10);
 }
 
 // ── Gmail helpers ─────────────────────────────────────────────────
@@ -460,10 +527,15 @@ async function agentReply(message, data) {
     return '⚠️ No pude identificar el evento. ¿Podés ser más específico?';
   }
 
-  // Drive: SEARCH
-  const driveKW = ['buscame en drive','encontrá en drive','buscá en drive','buscar en drive','archivo de','propuesta de','documento de','encontrá el archivo','mandame el archivo'];
-  if (driveKW.some(k=>msg.includes(k))) {
-    const query = message.replace(/buscame en drive|encontrá en drive|buscá en drive|buscar en drive|buscame|encontrá|buscá|el archivo|la propuesta|el documento/gi,'').trim();
+  // Drive: SEARCH — broad detection
+  const driveKW = ['buscame en drive','encontrá en drive','buscá en drive','buscar en drive','busca en drive',
+    'en mi drive','en el drive','del drive','desde drive','en drive',
+    'archivo de','encontrá el archivo','mandame el archivo','buscame el archivo',
+    'buscame la propuesta','encontrá la propuesta','buscame el documento','encontrá el documento'];
+  const hasDriveIntent = driveKW.some(k=>msg.includes(k)) || 
+    (msg.includes('drive') && (msg.includes('busca') || msg.includes('encontrá') || msg.includes('buscame') || msg.includes('archivo') || msg.includes('propuesta') || msg.includes('documento')));
+  if (hasDriveIntent) {
+    const query = message.replace(/buscame en drive|encontrá en drive|buscá en drive|buscar en drive|busca en drive|buscame|encontrá|buscá|en mi drive|en el drive|del drive|en drive|el archivo|la propuesta|el documento/gi,'').trim();
     const files = await searchDrive(query);
     if (!files.length) return `🔍 No encontré archivos con "${query}" en Drive.`;
     let reply = `📁 *Encontré en Drive:*\n`;
@@ -475,8 +547,10 @@ async function agentReply(message, data) {
   }
 
   // Drive: SUMMARY of a file
-  const summaryKW = ['resumime','resumen de','qué dice','qué incluye','qué tiene','contenido de'];
-  if (summaryKW.some(k=>msg.includes(k)) && (msg.includes('archivo') || msg.includes('propuesta') || msg.includes('documento') || msg.includes('drive'))) {
+  const summaryKW = ['resumime','resumen de','qué dice','qué incluye','qué tiene','contenido de','abrí el','abrí la','leeme'];
+  const hasSummaryIntent = summaryKW.some(k=>msg.includes(k)) && 
+    (msg.includes('archivo') || msg.includes('propuesta') || msg.includes('documento') || msg.includes('drive') || msg.includes('pdf') || msg.includes('sheet') || msg.includes('doc'));
+  if (hasSummaryIntent) {
     const query = message.replace(/resumime|resumen de|qué dice|qué incluye|qué tiene|contenido de|el archivo|la propuesta|el documento|en drive/gi,'').trim();
     const files = await searchDrive(query);
     if (!files.length) return `🔍 No encontré "${query}" en Drive.`;
