@@ -977,7 +977,9 @@ async function sendChat(){
       body: JSON.stringify({ prompt: msg, context: D.context, contextVida: D.contextVida, priorities: D.prioritiesLab, prioritiesVida: D.prioritiesVida })
     });
     document.getElementById('typing-ind')?.remove();
-    addChatMsg(r?.text || 'Error al responder.', 'gus');
+    const reply = r?.text || 'Error al responder.';
+    addChatMsg(reply, 'gus');
+    speakText(reply);
   } catch {
     document.getElementById('typing-ind')?.remove();
     addChatMsg('Error de conexión.', 'gus');
@@ -1013,6 +1015,8 @@ function startListening(){
     if(inp) inp.value = transcript;
     if(e.results[e.results.length-1].isFinal){
       stopListening();
+      // Auto-enable TTS when using voice input
+      if(!ttsEnabled){ ttsEnabled=true; const b=document.getElementById('tts-btn'); if(b)b.textContent='🔊'; }
       sendChat();
     }
   };
@@ -1032,6 +1036,41 @@ function stopListening(){
   const btn = document.getElementById('voice-btn');
   if(btn){ btn.className='voice-btn'; btn.textContent='🎙'; }
   document.getElementById('voice-status').textContent = '';
+}
+
+// ── Text to Speech ────────────────────────────────────────────────
+let ttsEnabled = false;
+let currentUtterance = null;
+
+function toggleTTS(){
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('tts-btn');
+  if(btn) btn.textContent = ttsEnabled ? '🔊' : '🔇';
+  if(!ttsEnabled && currentUtterance) { speechSynthesis.cancel(); }
+}
+
+function speakText(text){
+  if(!ttsEnabled) return;
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  // Clean markdown for speech
+  const clean = text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/[🎙📅📁📧💰🎯🔵🟢✅⚠️❌]/g, '')
+    .replace(/
++/g, '. ')
+    .trim();
+  const utt = new SpeechSynthesisUtterance(clean);
+  utt.lang = 'es-AR';
+  utt.rate = 1.05;
+  utt.pitch = 1;
+  // Try to find a Spanish voice
+  const voices = speechSynthesis.getVoices();
+  const esVoice = voices.find(v => v.lang.startsWith('es')) || voices[0];
+  if(esVoice) utt.voice = esVoice;
+  currentUtterance = utt;
+  speechSynthesis.speak(utt);
 }
 
 

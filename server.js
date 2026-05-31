@@ -374,6 +374,7 @@ app.post('/api/ai', async (req, res) => {
     const msg = await ai.messages.create({
       model: 'claude-sonnet-4-5', max_tokens: 600,
       system: `Sos GUS, el asistente personal de Gabriel. Respondés desde la web app. Español rioplatense. Máximo 200 palabras.
+Fecha y hora en Argentina: ${new Date().toLocaleString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'})}
 Contexto laboral: ${data.context || 'Sin contexto.'}
 Contexto personal: ${data.contextVida || 'Sin contexto.'}
 Prioridades hoy: ${(data.prioritiesLab||[]).join(', ') || 'Sin check-in'}`,
@@ -637,6 +638,7 @@ async function agentReply(message, data) {
 
   // General agent with full context
   const now = new Date();
+  const arToday = now.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',timeZone:'America/Argentina/Buenos_Aires'});
   const events = await getEventsToday().catch(()=>[]);
   const calCtx = events.length ? '\nAgenda hoy: ' + events.map(e=>fmtEvent(e)).join(' | ') : '';
 
@@ -648,7 +650,7 @@ ${data.context || 'Sin contexto cargado.'}
 CONTEXTO PERSONAL:
 ${data.contextVida || 'Sin contexto personal.'}
 
-ESTADO HOY (${now.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}):
+ESTADO HOY (${arToday}):
 Prioridades laborales: ${(data.prioritiesLab||[]).join(' | ') || 'sin check-in'}
 Prioridades de vida: ${(data.prioritiesVida||[]).join(' | ') || 'sin check-in'}
 ${calCtx}
